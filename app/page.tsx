@@ -1,83 +1,367 @@
-import Link from "next/link";
+"use client";
+
+import { memo, useEffect, useState, useSyncExternalStore } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import Image from "next/image";
+import { TransitionLink } from "./page-transition";
+
+const GAME_CARD_SIZE = "clamp(18rem, 27.5vw, 70rem)";
+const GAME_CARD_IMAGE_SIZES = "(max-width: 1024px) 40vw, 70rem";
+const GAME_CARD_FONT_SIZE = "calc(clamp(18rem, 27.5vw, 70rem) / 24)";
+const GAME_CARD_TOP_PAD = "calc((100dvh - var(--rlg-nav-h) - clamp(18rem, 27.5vw, 70rem)) / 2)";
+const GAME_CARD_GAP = "clamp(1rem, 5vw, 6rem)";
+const GAME_CARD_VAT_LAYER_SRC = "/rlg_layer_vat.webp";
+const GAME_CARD_GLOW_LAYER_SRC = "/rlg_layer_glow.svg";
+const GAME_CARD_METAL_LAYER_SRC = "/rlg_layer_metal.webp";
+const GAME_CARD_VAT_LAYER_OPACITY = 0;
+const CARD_GRID_STYLE = { "--rlg-gamecard-gap": GAME_CARD_GAP } as CSSProperties;
+const VAT_BUBBLES_VISIBLE_COUNT = 18;
+
+const GAME_CARD_ARTICLE_CLASS = "group relative aspect-square overflow-hidden";
+const GAME_CARD_IMAGE_WINDOW_CLASS =
+  "pointer-events-none absolute left-1/2 top-1/2 z-[2] h-[12em] w-[12em] -translate-x-1/2 -translate-y-[50%] overflow-hidden border-[0.2em] border-black bg-brand-background";
+const GAME_CARD_FROST_LAYER_CLASS =
+  "pointer-events-none absolute inset-y-0 h-full w-[83%] left-1/2 -translate-x-1/2 z-[1] rounded-[33%] backdrop-blur-[0.3em] bg-white/25";
+const VAT_BUBBLE_LAYER_CLASS =
+  "pointer-events-none absolute inset-y-0 left-1/2 z-[3] h-full w-[83%] -translate-x-1/2 overflow-hidden rounded-[33%]";
+const VAT_LIQUID_LAYER_CLASS =
+  "pointer-events-none absolute inset-y-0 left-1/2 z-[4] h-full w-[83%] -translate-x-1/2 rounded-[33%]";
+const VAT_GLASS_LAYER_CLASS =
+  "pointer-events-none absolute inset-y-0 h-full w-[83%] left-1/2 -translate-x-1/2 z-[5] rounded-[33%] border-[0.2em] border-white/30 ring-3 ring-black";
+const VAT_GLOW_MASK_LAYER_CLASS = "pointer-events-none absolute inset-0 z-[6]";
+
+const VAT_LIQUID_BACKGROUND =
+  "linear-gradient(to top, rgba(0, 255, 157, 1) 0%, rgba(255, 0, 153, 0) 35%)";
+const VAT_GLASS_BACKGROUND =
+  "linear-gradient(to bottom, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.2) 28%, rgba(255, 255, 255, 0.15) 62%), radial-gradient(120% 75% at 50% -8%, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.02) 68%)";
+
+const CARD_ACTION_BASE_CLASS =
+  "translate-y-[-0.4em] relative inline-flex items-center justify-center overflow-hidden rounded-full border-3 border-white/40 ring-2 ring-black w-[8em] h-[1.5em] text-[1.75em] font-bold leading-none text-brand-glow";
+const CARD_ACTION_GLOSS =
+  "linear-gradient(to bottom, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.15) 45%, rgba(255, 255, 255, 0))";
+
+const VAT_BUBBLE_SPEED_MULTIPLIER_BASE = 1;
+const VAT_BUBBLE_SPEED_MULTIPLIER_HOVER = 6;
+
+const GLOW_MASK_BASE_STYLE = {
+  opacity: 1,
+  maskSize: "cover",
+  maskPosition: "center",
+  maskRepeat: "no-repeat",
+  WebkitMaskSize: "cover",
+  WebkitMaskRepeat: "no-repeat",
+} as const;
+
+type VatBubble = {
+  id: number;
+  cx: number;
+  cy: number;
+  r: number;
+  driftPx: number;
+  durationSeconds: number;
+  delaySeconds: number;
+  risePx: number;
+  opacity: number;
+};
+
+function deterministicUnit(seed: number): number {
+  const value = Math.sin(seed) * 10000;
+  return value - Math.floor(value);
+}
+
+function randomBetween(min: number, max: number, unit: number): number {
+  return min + unit * (max - min);
+}
+
+function createVatBubble(id: number): VatBubble {
+  const unit = (step: number) => deterministicUnit(id * 997 + step * 1013);
+  const radius = randomBetween(1.2, 2.2, unit(1));
+  const durationSeconds = randomBetween(3.6, 6.2, unit(2));
+  const driftPx = randomBetween(-9, 9, unit(3));
+
+  return {
+    id,
+    cx: randomBetween(10, 90, unit(4)),
+    cy: randomBetween(98, 106, unit(5)),
+    r: radius,
+    driftPx,
+    durationSeconds,
+    delaySeconds: randomBetween(-6.2, 0, unit(6)),
+    risePx: randomBetween(90, 122, unit(7)),
+    opacity: randomBetween(0.44, 0.62, unit(8)),
+  };
+}
+
+const STATIC_VAT_BUBBLES: VatBubble[] = Array.from({ length: VAT_BUBBLES_VISIBLE_COUNT }, (_, index) =>
+  createVatBubble(index + 1)
+);
+
+function usePrefersReducedMotion(): boolean {
+  const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const syncPreference = () => {
+      setPrefersReducedMotion(mediaQuery.matches);
+    };
+
+    syncPreference();
+    mediaQuery.addEventListener("change", syncPreference);
+
+    return () => {
+      mediaQuery.removeEventListener("change", syncPreference);
+    };
+  }, []);
+
+  return prefersReducedMotion;
+}
+
+function useHasHydrated(): boolean {
+  return useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
+}
 
 type GameCard = {
   title: string;
   href: string;
-  description: string;
   imageSrc?: string;
+  gameColor: string;
+  isReady: boolean;
 };
+
+type CardActionProps = {
+  isReady: boolean;
+  href: string;
+  onPlayHoverChange?: (isHovering: boolean) => void;
+};
+
+function CardAction({ isReady, href, onPlayHoverChange }: CardActionProps) {
+  const actionChrome: ReactNode = (
+    <>
+      <span aria-hidden="true" className="pointer-events-none absolute inset-[0px] z-20 rounded-[9999px] bg-white opacity-[0.15]" />
+      <span aria-hidden="true" className="pointer-events-none absolute inset-0 z-0" style={{ background: CARD_ACTION_GLOSS }} />
+      <span className="engraved-title relative z-10 text-[0.9em]">{isReady ? "Play" : "Coming Soon"}</span>
+    </>
+  );
+
+  if (isReady) {
+    return (
+      <TransitionLink
+        href={href}
+        className={`${CARD_ACTION_BASE_CLASS} bg-brand-orange`}
+        onMouseEnter={() => onPlayHoverChange?.(true)}
+        onMouseLeave={() => onPlayHoverChange?.(false)}
+        onFocus={() => onPlayHoverChange?.(true)}
+        onBlur={() => onPlayHoverChange?.(false)}
+      >
+        {actionChrome}
+      </TransitionLink>
+    );
+  }
+
+  return (
+    <span
+      aria-disabled="true"
+      className={`${CARD_ACTION_BASE_CLASS} bg-brand-background`}
+    >
+      {actionChrome}
+    </span>
+  );
+}
 
 const GAMES: GameCard[] = [
   {
-    title: "Rapid Path",
+    title: "RAPID PATH",
     href: "/rapid-path",
-    description: "Play now",
     imageSrc: "/rapidPath.png",
+    gameColor: "var(--color-rapidPath)",
+    isReady: true,
   },
   {
-    title: "Stickman Skydive Simulator",
+    title: "STICKMAN SKYDIVE",
     href: "/stickman-skydive-simulator",
-    description: "Coming soon",
-    imageSrc: "/stickmanSkydivePreview.png",
+    imageSrc: "/stickmanSkydivePreview.PNG",
+    gameColor: "var(--color-stickman)",
+    isReady: false,
   },
   {
-    title: "Swerve",
+    title: "SWERVE",
     href: "/swerve",
-    description: "Coming soon",
-  },
+    gameColor: "var(--color-swerve)",
+    isReady: false,
+  }
 ];
 
-export default function HomePage() {
+type VatBubbleLayerProps = {
+  boosted: boolean;
+  prefersReducedMotion: boolean;
+};
+
+function VatBubbleLayer({ boosted, prefersReducedMotion }: VatBubbleLayerProps) {
+  const hasHydrated = useHasHydrated();
+
+  if (!hasHydrated || prefersReducedMotion) {
+    return null;
+  }
+
+  const speedMultiplier = boosted ? VAT_BUBBLE_SPEED_MULTIPLIER_HOVER : VAT_BUBBLE_SPEED_MULTIPLIER_BASE;
+
   return (
-    <main className="min-h-dvh bg-zinc-900 px-6 py-12 text-zinc-100">
-      <div className="mx-auto max-w-6xl">
-        <div className="mb-10 flex flex-col items-center">
-          <h1 className="mb-2 text-center text-3xl font-bold tracking-wide text-zinc-100 sm:text-4xl md:text-6xl">
-            Reaction Lab Games
-          </h1>
-          <div className="flex h-[170px] w-[170px] items-center justify-center rounded-full border border-white/0 bg-zinc-0 sm:h-[210px] sm:w-[210px] md:h-[250px] md:w-[250px]">
-            <Image
-              src="/ReactionLabLogo.png"
-              alt="Reaction Lab Logo"
-              width={220}
-              height={220}
-              priority
-              className="h-auto w-[78%]"
+    <div
+      aria-hidden
+      className={VAT_BUBBLE_LAYER_CLASS}
+    >
+      <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none" role="presentation">
+        {STATIC_VAT_BUBBLES.map((bubble) => {
+          const bubbleStyle = {
+            "--bubble-rise": `${bubble.risePx}px`,
+            "--bubble-drift": `${bubble.driftPx}px`,
+            "--bubble-duration": `${bubble.durationSeconds / speedMultiplier}s`,
+            "--bubble-delay": `${bubble.delaySeconds}s`,
+          } as CSSProperties;
+
+          return (
+            <circle
+              key={bubble.id}
+              cx={bubble.cx}
+              cy={bubble.cy}
+              r={bubble.r}
+              opacity={bubble.opacity}
+              className="vat-bubble liquid-bubble-logo"
+              style={bubbleStyle}
             />
-          </div>
+          );
+        })}
+      </svg>
+    </div>
+  );
+}
+
+type GameCardTileProps = {
+  game: GameCard;
+  index: number;
+  prefersReducedMotion: boolean;
+};
+
+const GameCardTile = memo(function GameCardTile({ game, index, prefersReducedMotion }: GameCardTileProps) {
+  const [isPlayHovered, setIsPlayHovered] = useState(false);
+
+  return (
+    <article
+      data-gamecard="true"
+      data-gamecard-index={index}
+      className={GAME_CARD_ARTICLE_CLASS}
+      style={{
+        width: GAME_CARD_SIZE,
+        fontSize: GAME_CARD_FONT_SIZE,
+        filter: `drop-shadow(0 0 0.25em ${game.gameColor})`,
+      }}
+    >
+      {GAME_CARD_VAT_LAYER_OPACITY > 0 ? (
+        <Image
+          src={GAME_CARD_VAT_LAYER_SRC}
+          alt=""
+          fill
+          aria-hidden
+          className="pointer-events-none z-[1] select-none"
+          style={{ opacity: GAME_CARD_VAT_LAYER_OPACITY }}
+          sizes={GAME_CARD_IMAGE_SIZES}
+        />
+      ) : null}
+
+      <div
+        aria-hidden
+        className={GAME_CARD_FROST_LAYER_CLASS}
+      />
+
+      <div
+        aria-hidden
+        className={GAME_CARD_IMAGE_WINDOW_CLASS}
+      >
+        {game.imageSrc ? (
+          <Image
+            src={game.imageSrc}
+            alt={game.title}
+            fill
+            className="pointer-events-none z-[1] select-none object-cover"
+            sizes={GAME_CARD_IMAGE_SIZES}
+          />
+        ) : (
+          <div className="h-full w-full bg-brand-background" />
+        )}
+      </div>
+
+      <VatBubbleLayer boosted={game.isReady && isPlayHovered} prefersReducedMotion={prefersReducedMotion} />
+
+      <div
+        aria-hidden
+        className={VAT_LIQUID_LAYER_CLASS}
+        style={{
+          background: VAT_LIQUID_BACKGROUND,
+        }}
+      />
+
+      <div
+        aria-hidden
+        className={VAT_GLASS_LAYER_CLASS}
+        style={{
+          background: VAT_GLASS_BACKGROUND,
+        }}
+      />
+
+      <div
+        aria-hidden
+        className={VAT_GLOW_MASK_LAYER_CLASS}
+        style={{
+          backgroundColor: game.gameColor,
+          maskImage: `url('${GAME_CARD_GLOW_LAYER_SRC}')`,
+          WebkitMaskImage: `url('${GAME_CARD_GLOW_LAYER_SRC}')`,
+          ...GLOW_MASK_BASE_STYLE,
+        }}
+      />
+
+      <Image
+        src={GAME_CARD_METAL_LAYER_SRC}
+        alt=""
+        fill
+        aria-hidden
+        className="pointer-events-none z-[7] select-none"
+        sizes={GAME_CARD_IMAGE_SIZES}
+      />
+
+      <div className="relative z-[20] flex h-full flex-col items-center justify-center gap-[16.65em]">
+        <div className="flex h-[3.5em] items-center justify-center bg-brand-background w-[14em] border-[0.2em] border-black">
+          <h2 className="engraved-title text-center text-[1.5em] leading-[0.9] font-bold">
+            {game.title}
+          </h2>
         </div>
 
-        <section>
-          <div className="grid gap-8 lg:grid-cols-3">
-            {GAMES.map((game) => (
-              <Link
-                key={game.title}
-                href={game.href}
-                className="group block rounded-lg border border-white/10 bg-zinc-800/60 p-4 transition-colors hover:border-white/20"
-              >
-                <div className="aspect-square w-full overflow-hidden rounded-lg border border-white/20 bg-zinc-900">
-                  {game.imageSrc ? (
-                    <Image
-                      src={game.imageSrc}
-                      alt={game.title}
-                      width={700}
-                      height={700}
-                      priority={game.title === "Rapid Path"}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <div className="h-full w-full rounded-lg border-2 border-dashed border-white/25" />
-                  )}
-                </div>
+        <CardAction
+          isReady={game.isReady}
+          href={game.href}
+          onPlayHoverChange={setIsPlayHovered}
+        />
+      </div>
+    </article>
+  );
+});
 
-                <h2 className="mt-4 text-2xl font-bold transition-colors group-hover:text-zinc-300">
-                  {game.title}
-                </h2>
-                <p className="mt-1 text-zinc-400 transition-colors group-hover:text-zinc-300">
-                  {game.description} →
-                </p>
-              </Link>
+export default function HomePage() {
+  const prefersReducedMotion = usePrefersReducedMotion();
+
+  return (
+    <main className="relative z-[10] overflow-visible text-brand-orange" style={{ paddingTop: GAME_CARD_TOP_PAD }}>
+      <div
+        className="relative w-full px-[var(--rlg-gamecard-gap)]"
+        style={CARD_GRID_STYLE}
+      >
+        <section>
+          <div className="grid grid-cols-3 justify-items-center gap-x-[var(--rlg-gamecard-gap)]">
+            {GAMES.map((game, index) => (
+              <GameCardTile key={game.title} game={game} index={index} prefersReducedMotion={prefersReducedMotion} />
             ))}
           </div>
         </section>

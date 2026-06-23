@@ -1,6 +1,170 @@
 @import "tailwindcss";
 
 @theme inline {
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-bagel-fat-one);
+  --font-mono: var(--font-bagel-fat-one);
+  --color-brand-cream: #fff770;
+  --color-brand-orange: #ff9f00;
+  --color-brand-orange-alt: #FFB03B;
+  --color-brand-glow: #8eff8b;
+  --color-brand-pipe: #918A81;
+  --color-brand-rust: #8B5E3C;
+  --color-brand-background: #383A47;
+  --color-brand-darkblue: #004a53ff;
+  --color-brand-pink: #ff665aff;
+  --color-brand-water: #0AFA90;
+  --color-rapidPath: #3F161C;
+  --color-stickman: #00A8DB;
+  --color-swerve: #FFF300;
+  --rlg-page-pad-x: 3.75rem;
+  --rlg-nav-h: 10dvh;
+  --rlg-nav-pad-x: clamp(0.9rem, 3vw, 1.8rem);
+  --rlg-nav-gap: clamp(0.5rem, 1.4vw, 0.9rem);
+  --rlg-badge-size: clamp(3.5rem, 10vw, 7.5rem);
+}
+
+html,
+body {
+  background-image: url("/rlg_background.jpg");
+  background-repeat: repeat;
+  background-size: clamp(120px, 20vw, 4000px);
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-brand-pipe) var(--color-brand-background);
+  -ms-overflow-style: auto;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+html::-webkit-scrollbar-track,
+body::-webkit-scrollbar-track {
+  background: var(--color-brand-background);
+}
+
+html::-webkit-scrollbar-thumb,
+body::-webkit-scrollbar-thumb {
+  background-color: var(--color-brand-pipe);
+  border-radius: 9999px;
+  border: 2px solid var(--color-brand-background);
+}
+
+.hide-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-brand-pipe) var(--color-brand-background);
+  -ms-overflow-style: auto;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+.hide-scrollbar::-webkit-scrollbar-track {
+  background: var(--color-brand-background);
+}
+
+.hide-scrollbar::-webkit-scrollbar-thumb {
+  background-color: var(--color-brand-pipe);
+  border-radius: 9999px;
+  border: 2px solid var(--color-brand-background);
+}
+
+body {
+  background-image: url("/rlg_background.jpg");
+  background-repeat: repeat;
+  background-size: clamp(120px, 20vw, 4000px);
+  background-position: center;
+  background-position-y: 0px;
+}
+
+@keyframes pipe-drift {
+  0% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: -21;
+  }
+}
+
+@keyframes gauge-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+.pipe-flow {
+  stroke-dasharray: 1 20;
+  animation: pipe-drift 3.8s linear infinite;
+}
+
+.gauge-float {
+  transform-origin: center;
+  animation: gauge-float 4.8s ease-in-out infinite;
+}
+
+@keyframes liquid-bubble-rise {
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 0;
+  }
+  18% {
+    opacity: 0.72;
+  }
+  100% {
+    transform: translateY(calc(var(--bubble-rise) * -1)) translateX(var(--bubble-drift));
+    opacity: 0;
+  }
+}
+
+.liquid-bubble {
+  animation-name: liquid-bubble-rise;
+  animation-duration: var(--bubble-duration, 4.2s);
+  animation-delay: var(--bubble-delay, 0s);
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.vat-bubble {
+  animation-name: liquid-bubble-rise;
+  animation-duration: var(--bubble-duration, 4.2s);
+  animation-delay: var(--bubble-delay, 0s);
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.liquid-bubble-logo {
+  fill: rgba(0, 255, 157, 0.9);
+}
+
+.engraved-title {
+  color: var(--color-brand-glow);
+  -webkit-text-stroke: 1.2px rgba(0, 0, 0, 0.6);
+  transform: translateY(0.25rem);
+}
+
+.engraved-text {
+  color: var(--color-brand-glow);
+  -webkit-text-stroke: 1px rgba(0, 0, 0, 0.6);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pipe-flow,
+  .gauge-float,
+  .liquid-bubble {
+    animation: none;
+  }
+
+  .vat-bubble {
+    animation: none;
+    transform: translateY(-22%);
+    opacity: 0.7;
+  }
+
 }

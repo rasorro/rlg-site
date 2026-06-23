@@ -1,20 +1,17 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Coiny } from "next/font/google";
 import "./globals.css";
 import AppShell from "./app-shell";
 import { UiProvider } from "./ui-context";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const universalFont = Coiny({
+  weight: "400",
+  variable: "--font-bagel-fat-one",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://reactionlabgames.com"),
   title: {
     default: "Reaction Lab Games",
     template: "%s | Reaction Lab Games",
@@ -30,7 +27,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/ReactionLabLogo.png",
+        url: "/rlg_Logo.png",
         alt: "Reaction Lab Games logo",
       },
     ],
@@ -40,12 +37,12 @@ export const metadata: Metadata = {
     title: "Reaction Lab Games",
     description:
       "Welcome to Reaction Lab Games! Play Rapid Path for free now! Coming soon: Stickman-Skydive-Simulator, Swerve.",
-    images: ["/ReactionLabLogo.png"],
+    images: ["/rlg_Logo.png"],
   },
   icons: {
-    icon: "/ReactionLabLogo.png",
-    shortcut: "/ReactionLabLogo.png",
-    apple: "/ReactionLabLogo.png",
+    icon: "/rlg_Logo.png",
+    shortcut: "/rlg_Logo.png",
+    apple: "/rlg_Logo.png",
   },
 };
 
@@ -57,9 +54,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${universalFont.variable} h-full antialiased bg-brand-background overflow-hidden`}
     >
-      <body className="min-h-full font-sans">
+      <body className="h-full overflow-hidden font-sans -z-30">
         <UiProvider>
           <AppShell>{children}</AppShell>
         </UiProvider>

@@ -1,105 +1,157 @@
 "use client";
 
+import { useCallback, useEffect, useRef, useState } from "react";
+import GameInfoPanel, { type InfoSection } from "../game-info-panel";
+import { usePageTransition } from "../page-transition";
 import { useUi } from "../ui-context";
-
-type InfoSection = {
-    title: string;
-    text?: string;
-    items?: string[];
-};
 
 const INFO_SECTIONS: InfoSection[] = [
     {
         title: "Controls",
-        text: "WASD or Arrow Keys",
+        text: "",
     },
     {
         title: "Goal",
-        text: "Create a path that connects all the given dots.",
+        text: "Connect every highlighted dot in one continuous path.",
     },
     {
         title: "Game Modes",
-        items: ["No Path", "Show Path"],
+        items: ["No Path: find the path yourself", "Show Path: speed through set path"],
     },
     {
         title: "Rules",
         items: [
-            "Gain 3 seconds for each completed path.",
-            "Cannot go backwards.",
-            "Cannot go on black dots.",
+            "+3 seconds for each completed path.",
+            "No backtracking.",
+            "Don't touch black dots.",
         ],
     },
     {
         title: "Menu",
-        text: "Pause to submit high score, view leaderboard, restart, change theme, mute sounds, or change to show path mode.",
+        text: "Pause to submit score, view leaderboard, restart, change theme, mute audio, or switch modes.",
     },
 ];
 
-function SectionText({ text }: { text: string }) {
-    return <p className="mt-2 whitespace-normal text-xl text-zinc-300">{text}</p>;
-}
-
-function SectionList({ items }: { items: string[] }) {
-    return (
-        <ul className="mt-2 list-disc pl-6 text-xl text-zinc-300">
-            {items.map((item) => (
-                <li key={item}>{item}</li>
-            ))}
-        </ul>
-    );
-}
-
 export default function RapidPathPage() {
     const { showUiPanels, setShowUiPanels } = useUi();
+    const { isTransitioning } = usePageTransition();
+    const gameFrameRef = useRef<HTMLIFrameElement | null>(null);
+    const [shouldLoadGame, setShouldLoadGame] = useState(false);
+    const [viewportMinSide, setViewportMinSide] = useState(900);
+
+    const focusModePercent = Math.min(100, Math.max(90, 90 + (900 - viewportMinSide) / 18));
+    const focusModeSize = `min(calc(${focusModePercent.toFixed(2)}dvw), calc(${focusModePercent.toFixed(2)}dvh))`;
+
     const boardSize = showUiPanels
-        ? "min(calc(100dvw - 2rem), calc(100dvh - 7rem), 760px)"
-        : "min(100dvw, 100dvh, 760px)";
+        ? "min(calc(90dvw - 2rem), calc(90dvh - 7rem), 760px)"
+        : focusModeSize;
+    const pageHeightClass = showUiPanels ? "min-h-[calc(100dvh-var(--rlg-nav-h))]" : "min-h-dvh";
+    const boardToggleSize = `clamp(1rem, calc(${boardSize} * 0.0425), 3rem)`;
+    const boardToggleInset = `clamp(0.35rem, calc(${boardSize} * 0.013), 0.9rem)`;
+
+    useEffect(() => {
+        if (shouldLoadGame || isTransitioning) {
+            return;
+        }
+
+        const timeoutId = window.setTimeout(() => {
+            setShouldLoadGame(true);
+        }, 120);
+
+        return () => window.clearTimeout(timeoutId);
+    }, [isTransitioning, shouldLoadGame]);
+
+    useEffect(() => {
+        const syncViewportMinSide = () => {
+            setViewportMinSide(Math.min(window.innerWidth, window.innerHeight));
+        };
+
+        syncViewportMinSide();
+        window.addEventListener("resize", syncViewportMinSide);
+
+        return () => window.removeEventListener("resize", syncViewportMinSide);
+    }, []);
+
+    const requestGameFocus = useCallback(() => {
+        const frame = gameFrameRef.current;
+        if (!frame) return;
+
+        frame.focus();
+        try {
+            frame.contentWindow?.postMessage({ type: "RLG_FOCUS_GAME" }, window.location.origin);
+            frame.contentWindow?.focus();
+        } catch {
+            // Ignore cross-frame focus errors in restrictive environments.
+        }
+    }, []);
+
+    useEffect(() => {
+        const timeoutId = window.setTimeout(() => {
+            requestGameFocus();
+        }, 75);
+
+        return () => window.clearTimeout(timeoutId);
+    }, [showUiPanels, requestGameFocus]);
 
     return (
-        <main className={showUiPanels
-            ? "relative flex min-h-[calc(100dvh-3.5rem)] w-full items-start justify-center bg-zinc-900 p-4 xl:items-center"
-            : "relative flex min-h-dvh w-full items-center justify-center overflow-hidden bg-zinc-900 p-0"}>
-            <div className={showUiPanels ? "flex flex-col items-center gap-8" : "flex flex-col items-center gap-0"}>
-                <div className={showUiPanels ? "relative mt-16 flex flex-col items-center gap-4 xl:mt-0" : "relative flex flex-col items-center gap-0"}>
-                    {showUiPanels && (
+        <main className={`relative flex flex-col ${pageHeightClass} w-full items-center overflow-y-auto bg-brand-background`}>
+            <div className={showUiPanels ? "flex flex-col items-center gap-8 py-4 sm:py-8 my-auto" : "flex flex-col items-center gap-0 my-auto"}>
+                <div className={showUiPanels ? "relative flex flex-col items-center gap-4" : "relative flex flex-col items-center gap-0"}>
+                    {/* {showUiPanels && (
                         <h1 className="absolute bottom-full left-1/2 z-10 mb-4 -translate-x-1/2 whitespace-nowrap text-5xl font-bold text-zinc-100">Rapid Path</h1>
-                    )}
+                    )} */}
 
-                    <div className="relative">
+                    <div className={showUiPanels ? "relative" : "relative"}>
                         <div
-                            className="aspect-square shrink-0 overflow-hidden border border-white/10 bg-black"
+                            className="aspect-square box-border shrink-0 overflow-hidden border border-white/10 bg-black"
                             style={{ width: boardSize }}
                         >
                             <iframe
-                                src="/game.html"
+                                ref={gameFrameRef}
+                                src={shouldLoadGame ? "/game.html" : "about:blank"}
                                 title="Reaction Lab Unity WebGL"
                                 className="h-full w-full border-0"
                                 allow="fullscreen; autoplay; gamepad"
                                 loading="eager"
+                                onLoad={requestGameFocus}
                             />
                         </div>
 
                         <button
-                            className="absolute left-1/2 top-full z-10 -translate-x-1/2 translate-y-3 rounded bg-white/10 px-3 py-1 text-lg text-zinc-100 transition hover:bg-white/20"
+                            type="button"
+                            className="absolute z-10 inline-flex items-center justify-center rounded-lg border-2 border-black bg-brand-pipe text-brand-glow backdrop-blur transition hover:bg-brand-orange"
+                            style={{ width: boardToggleSize, height: boardToggleSize, right: boardToggleInset, bottom: boardToggleInset }}
                             onClick={() => setShowUiPanels(!showUiPanels)}
+                            aria-label={showUiPanels ? "Enter focus mode" : "Exit focus mode"}
+                            title={showUiPanels ? "Enter focus mode" : "Exit focus mode"}
                         >
-                            {showUiPanels ? "FOCUS" : "HELP"}
+                            {showUiPanels ? (
+                                <svg viewBox="0 0 24 24" className="h-[70%] w-[70%]" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                                    <path d="M9 4H4v5" />
+                                    <path d="m4 4 6 6" />
+                                    <path d="M15 4h5v5" />
+                                    <path d="m20 4-6 6" />
+                                    <path d="M9 20H4v-5" />
+                                    <path d="m4 20 6-6" />
+                                    <path d="M15 20h5v-5" />
+                                    <path d="m20 20-6-6" />
+                                </svg>
+                            ) : (
+                                <svg viewBox="0 0 24 24" className="h-[70%] w-[70%]" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                                    <path d="M9 4H4v5" />
+                                    <path d="m4 4 6 6" />
+                                    <path d="M15 4h5v5" />
+                                    <path d="m20 4-6 6" />
+                                    <path d="M9 20H4v-5" />
+                                    <path d="m4 20 6-6" />
+                                    <path d="M15 20h5v-5" />
+                                    <path d="m20 20-6-6" />
+                                </svg>
+                            )}
                         </button>
                     </div>
 
-                    {showUiPanels && (
-                        <aside className="mt-12 w-full max-w-[400px] text-zinc-100 xl:mt-0 xl:absolute xl:left-[calc(100%+1.5rem)] xl:top-1/2 xl:w-[280px] xl:max-w-none xl:-translate-y-1/2">
-                            {INFO_SECTIONS.map((section, index) => (
-                                <div key={section.title}>
-                                    <h2 className={index === 0 ? "whitespace-nowrap text-2xl font-bold" : "mt-6 whitespace-nowrap text-2xl font-bold"}>
-                                        {section.title}
-                                    </h2>
-                                    {section.text && <SectionText text={section.text} />}
-                                    {section.items && <SectionList items={section.items} />}
-                                </div>
-                            ))}
-                        </aside>
-                    )}
+                    {showUiPanels && <GameInfoPanel sections={INFO_SECTIONS} height={boardSize} showControlsDiagram />}
                 </div>
             </div>
         </main>

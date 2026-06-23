@@ -1,12 +1,12 @@
-import Link from "next/link";
+import { TransitionLink } from "../page-transition";
 
 export default function SwervePage() {
     return (
         <main className="min-h-dvh bg-zinc-900 px-6 py-12 text-zinc-100">
             <div className="mx-auto max-w-2xl">
-                <Link href="/" className="text-sm text-zinc-500 transition-colors hover:text-zinc-300">
+                <TransitionLink href="/" className="text-sm text-zinc-500 transition-colors hover:text-zinc-300">
                     ← Back
-                </Link>
+                </TransitionLink>
 
                 <div className="mt-8 flex flex-wrap items-center gap-4">
                     <h1 className="text-4xl font-bold">Swerve</h1>
