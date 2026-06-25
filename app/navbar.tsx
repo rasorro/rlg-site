@@ -31,8 +31,8 @@ export default function Navbar() {
         >
             <div className="flex h-full items-center gap-[var(--rlg-nav-gap)] font-bold" style={{ fontSize: "calc(var(--rlg-nav-h) * 0.45)" }}>
                 <div aria-label="Reaction Lab Games" className="leading-none bg-brand-pink px-[0.5em] py-[0.2em] border-3 border-black text-center translate-x-[0.5em]">
-                    <span className="engraved-title relative top-[0.1em] max-[750px]:inline min-[1001px]:hidden">RLG</span>
-                    <span className="engraved-title relative top-[0.1em] hidden min-[751px]:inline">REACTION LAB GAMES</span>
+                    <span className="engraved-title relative top-[0.1em] hidden max-[750px]:inline">RLG</span>
+                    <span className="engraved-title relative top-[0.1em] inline max-[750px]:hidden">REACTION LAB GAMES</span>
                 </div>
 
                 <div className="ml-auto flex items-center gap-[var(--rlg-nav-gap)] text-[0.7em] translate-x-[-0.5em]">
@@ -43,7 +43,8 @@ export default function Navbar() {
                             className="pointer-events-none absolute inset-0 z-0"
                             style={{ background: "linear-gradient(to bottom, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.15) 45%, rgba(255, 255, 255, 0))" }}
                         />
-                        <span className="engraved-title relative z-10">ABOUT</span>
+                        <span className="engraved-title relative z-10 hidden max-[750px]:inline">A</span>
+                        <span className="engraved-title relative z-10 inline max-[750px]:hidden">ABOUT</span>
                     </TransitionLink>
 
                     <TransitionLink href="/contact" className={navButtonClass} aria-label="Go to Contact page">
@@ -53,7 +54,8 @@ export default function Navbar() {
                             className="pointer-events-none absolute inset-0 z-0"
                             style={{ background: "linear-gradient(to bottom, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.15) 45%, rgba(255, 255, 255, 0))" }}
                         />
-                        <span className="engraved-title relative z-10">CONTACT</span>
+                        <span className="engraved-title relative z-10 hidden max-[750px]:inline">C</span>
+                        <span className="engraved-title relative z-10 inline max-[750px]:hidden">CONTACT</span>
                     </TransitionLink>
                 </div>
             </div>

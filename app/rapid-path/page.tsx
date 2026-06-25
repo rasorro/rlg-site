@@ -37,10 +37,9 @@ export default function RapidPathPage() {
     const { isTransitioning } = usePageTransition();
     const gameFrameRef = useRef<HTMLIFrameElement | null>(null);
     const [shouldLoadGame, setShouldLoadGame] = useState(false);
-    const [viewportMinSide, setViewportMinSide] = useState(900);
+    const [isFullscreen, setIsFullscreen] = useState(false);
 
-    const focusModePercent = Math.min(100, Math.max(90, 90 + (900 - viewportMinSide) / 18));
-    const focusModeSize = `min(calc(${focusModePercent.toFixed(2)}dvw), calc(${focusModePercent.toFixed(2)}dvh))`;
+    const focusModeSize = isFullscreen ? "min(90dvw, 90dvh)" : "min(100dvw, 100dvh)";
 
     const boardSize = showUiPanels
         ? "min(calc(90dvw - 2rem), calc(90dvh - 7rem), 760px)"
@@ -62,14 +61,30 @@ export default function RapidPathPage() {
     }, [isTransitioning, shouldLoadGame]);
 
     useEffect(() => {
-        const syncViewportMinSide = () => {
-            setViewportMinSide(Math.min(window.innerWidth, window.innerHeight));
+        const syncFullscreenState = () => {
+            const tolerancePx = 24;
+            const viewportW = window.visualViewport?.width ?? window.innerWidth;
+            const viewportH = window.visualViewport?.height ?? window.innerHeight;
+            const isBrowserFullscreenByViewport =
+                Math.abs(viewportW - window.screen.width) <= tolerancePx &&
+                Math.abs(viewportH - window.screen.height) <= tolerancePx;
+            const isScreenFillingWindow =
+                window.outerWidth >= window.screen.availWidth - tolerancePx &&
+                window.outerHeight >= window.screen.availHeight - tolerancePx;
+
+            setIsFullscreen(Boolean(document.fullscreenElement) || isBrowserFullscreenByViewport || isScreenFillingWindow);
         };
 
-        syncViewportMinSide();
-        window.addEventListener("resize", syncViewportMinSide);
+        syncFullscreenState();
+        document.addEventListener("fullscreenchange", syncFullscreenState);
+        window.addEventListener("resize", syncFullscreenState);
+        window.visualViewport?.addEventListener("resize", syncFullscreenState);
 
-        return () => window.removeEventListener("resize", syncViewportMinSide);
+        return () => {
+            document.removeEventListener("fullscreenchange", syncFullscreenState);
+            window.removeEventListener("resize", syncFullscreenState);
+            window.visualViewport?.removeEventListener("resize", syncFullscreenState);
+        };
     }, []);
 
     const requestGameFocus = useCallback(() => {
@@ -95,7 +110,7 @@ export default function RapidPathPage() {
 
     return (
         <main className={`relative flex flex-col ${pageHeightClass} w-full items-center overflow-y-auto bg-brand-background`}>
-            <div className={showUiPanels ? "flex flex-col items-center gap-8 py-4 sm:py-8 my-auto" : "flex flex-col items-center gap-0 my-auto"}>
+            <div className={showUiPanels ? "flex flex-col items-center gap-8 pt-12 pb-0" : "flex flex-col items-center gap-0 my-auto"}>
                 <div className={showUiPanels ? "relative flex flex-col items-center gap-4" : "relative flex flex-col items-center gap-0"}>
                     {/* {showUiPanels && (
                         <h1 className="absolute bottom-full left-1/2 z-10 mb-4 -translate-x-1/2 whitespace-nowrap text-5xl font-bold text-zinc-100">Rapid Path</h1>
