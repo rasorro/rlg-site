@@ -3,6 +3,7 @@ Options -Indexes
 
 # Serve pre-compressed .gz variants when browser supports gzip
 RewriteCond %{HTTP:Accept-Encoding} gzip
+RewriteCond %{REQUEST_URI} !\.gz$
 RewriteCond %{REQUEST_FILENAME}.gz -f
 RewriteRule ^(.*)$ $1.gz [L]
 
@@ -15,14 +16,17 @@ RewriteRule ^(.*/__next\.[^/]+)\.__PAGE__\.txt$ /$1/__PAGE__.txt [L]
 <FilesMatch "\.framework\.js\.gz$">
     Header set Content-Type "application/javascript"
     Header set Content-Encoding "gzip"
+    Header append Vary "Accept-Encoding"
 </FilesMatch>
 
 <FilesMatch "\.data\.gz$">
     Header set Content-Type "application/octet-stream"
     Header set Content-Encoding "gzip"
+    Header append Vary "Accept-Encoding"
 </FilesMatch>
 
 <FilesMatch "\.wasm\.gz$">
     Header set Content-Type "application/wasm"
     Header set Content-Encoding "gzip"
+    Header append Vary "Accept-Encoding"
 </FilesMatch>

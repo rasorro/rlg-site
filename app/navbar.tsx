@@ -16,12 +16,20 @@ export default function Navbar() {
             "linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.12) 22%, rgba(0, 0, 0, 0.2) 62%, rgba(255, 255, 255, 0.08) 100%)",
             "radial-gradient(120% 80% at 50% -30%, rgba(255, 255, 255, 0.36) 0%, rgba(255, 255, 255, 0) 62%)",
             "linear-gradient(to right, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0) 12%, rgba(255, 255, 255, 0.06) 24%, rgba(255, 255, 255, 0) 36%, rgba(255, 255, 255, 0.05) 48%, rgba(255, 255, 255, 0) 60%, rgba(255, 255, 255, 0.05) 72%, rgba(255, 255, 255, 0) 84%, rgba(255, 255, 255, 0.06) 100%)",
-            "url('rlg_Navbar_alt.webp')",
+            "url('/assets/rlg_Navbar_alt.webp')",
         ].join(", "),
         backgroundSize: "500% 500%, 500% 500%, 500% 500%, auto 500%",
         backgroundPosition: "center, center, center, center",
         backgroundRepeat: "no-repeat, no-repeat, no-repeat, repeat-x",
         backgroundBlendMode: "screen, soft-light, overlay, normal",
+    } as const;
+
+    const homeLinkStyle = {
+        width: "calc(var(--rlg-nav-h) * 1.35)",
+        height: "calc(var(--rlg-nav-h) * 1.35)",
+        top: "calc(var(--rlg-nav-h) / 15)",
+        clipPath: "circle(50% at 50% 50%)",
+        WebkitClipPath: "circle(50% at 50% 50%)",
     } as const;
 
     return (
@@ -31,8 +39,8 @@ export default function Navbar() {
         >
             <div className="flex h-full items-center gap-[var(--rlg-nav-gap)] font-bold" style={{ fontSize: "calc(var(--rlg-nav-h) * 0.45)" }}>
                 <div aria-label="Reaction Lab Games" className="leading-none bg-brand-pink px-[0.5em] py-[0.2em] border-3 border-black text-center translate-x-[0.5em]">
-                    <span className="engraved-title relative top-[0.1em] hidden max-[750px]:inline">RLG</span>
-                    <span className="engraved-title relative top-[0.1em] inline max-[750px]:hidden">REACTION LAB GAMES</span>
+                    <span className="engraved-title relative top-[0.1em] hidden max-[1300px]:inline">RLG</span>
+                    <span className="engraved-title relative top-[0.1em] inline max-[1300px]:hidden">REACTION LAB GAMES</span>
                 </div>
 
                 <div className="ml-auto flex items-center gap-[var(--rlg-nav-gap)] text-[0.7em] translate-x-[-0.5em]">
@@ -43,8 +51,8 @@ export default function Navbar() {
                             className="pointer-events-none absolute inset-0 z-0"
                             style={{ background: "linear-gradient(to bottom, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.15) 45%, rgba(255, 255, 255, 0))" }}
                         />
-                        <span className="engraved-title relative z-10 hidden max-[750px]:inline">A</span>
-                        <span className="engraved-title relative z-10 inline max-[750px]:hidden">ABOUT</span>
+                        <span className="engraved-title relative z-10 hidden max-[900px]:inline">A</span>
+                        <span className="engraved-title relative z-10 inline max-[900px]:hidden">ABOUT</span>
                     </TransitionLink>
 
                     <TransitionLink href="/contact" className={navButtonClass} aria-label="Go to Contact page">
@@ -54,15 +62,16 @@ export default function Navbar() {
                             className="pointer-events-none absolute inset-0 z-0"
                             style={{ background: "linear-gradient(to bottom, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.15) 45%, rgba(255, 255, 255, 0))" }}
                         />
-                        <span className="engraved-title relative z-10 hidden max-[750px]:inline">C</span>
-                        <span className="engraved-title relative z-10 inline max-[750px]:hidden">CONTACT</span>
+                        <span className="engraved-title relative z-10 hidden max-[900px]:inline">C</span>
+                        <span className="engraved-title relative z-10 inline max-[900px]:hidden">CONTACT</span>
                     </TransitionLink>
                 </div>
             </div>
             <TransitionLink
                 href="/"
                 aria-label="Go to home"
-                className="absolute left-1/2 top-full inline-flex h-[120px] w-[120px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full p-0 shrink-0"
+                className="absolute left-1/2 inline-flex shrink-0 -translate-x-1/2 items-center justify-center rounded-full p-0"
+                style={homeLinkStyle}
             >
                 <svg
                     viewBox="0 0 100 100"

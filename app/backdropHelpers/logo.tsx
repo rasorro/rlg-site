@@ -27,7 +27,7 @@ export default function Logo({ circleMetrics, bubbles }: LogoProps) {
 				<circle cx={circleMetrics.radius} cy={circleMetrics.radius} r={circleMetrics.radius - 2} fill="var(--color-brand-orange)" fillOpacity="1" />
 				<g clipPath="url(#liquid-logo-circle-clip)">
 					<image
-						href="/rlg_Logo.png"
+						href="/assets/rlg_Logo.png"
 						x={circleMetrics.diameter * 0.18}
 						y={circleMetrics.diameter * 0.18}
 						width={circleMetrics.diameter * 0.64}

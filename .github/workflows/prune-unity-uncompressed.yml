@@ -1,0 +1,38 @@
+name: Prune Unity Uncompressed
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+permissions:
+  contents: write
+
+jobs:
+  prune:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Prune uncompressed Unity artifacts
+        shell: pwsh
+        run: ./scripts/prune-unity-uncompressed.ps1
+
+      - name: Commit and push if changed
+        shell: bash
+        run: |
+          if [[ -n "$(git status --porcelain)" ]]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add -A
+            git commit -m "chore(ci): prune uncompressed Unity artifacts"
+            git push
+          else
+            echo "No pruning changes to commit."
+          fi

@@ -8,12 +8,10 @@
   --color-brand-orange-alt: #FFB03B;
   --color-brand-glow: #8eff8b;
   --color-brand-pipe: #918A81;
-  --color-brand-rust: #8B5E3C;
   --color-brand-background: #383A47;
-  --color-brand-darkblue: #004a53ff;
   --color-brand-pink: #ff665aff;
   --color-brand-water: #0AFA90;
-  --color-rapidPath: #3F161C;
+  --color-rapidPath: #00A405;
   --color-stickman: #00A8DB;
   --color-swerve: #FFF300;
   --rlg-page-pad-x: 3.75rem;
@@ -25,7 +23,7 @@
 
 html,
 body {
-  background-image: url("/rlg_background.jpg");
+  background-image: url("/assets/rlg_background.jpg");
   background-repeat: repeat;
   background-size: clamp(120px, 20vw, 4000px);
   scrollbar-width: thin;
@@ -73,7 +71,7 @@ body::-webkit-scrollbar-thumb {
 }
 
 body {
-  background-image: url("/rlg_background.jpg");
+  background-image: url("/assets/rlg_background.jpg");
   background-repeat: repeat;
   background-size: clamp(120px, 20vw, 4000px);
   background-position: center;

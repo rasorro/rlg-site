@@ -110,7 +110,7 @@ export default function RapidPathPage() {
 
     return (
         <main className={`relative flex flex-col ${pageHeightClass} w-full items-center overflow-y-auto bg-brand-background`}>
-            <div className={showUiPanels ? "flex flex-col items-center gap-8 pt-12 pb-0" : "flex flex-col items-center gap-0 my-auto"}>
+            <div className={showUiPanels ? "flex flex-col items-center gap-8 pt-[calc(var(--rlg-nav-h)-1rem)] pb-0" : "flex flex-col items-center gap-0 my-auto"}>
                 <div className={showUiPanels ? "relative flex flex-col items-center gap-4" : "relative flex flex-col items-center gap-0"}>
                     {/* {showUiPanels && (
                         <h1 className="absolute bottom-full left-1/2 z-10 mb-4 -translate-x-1/2 whitespace-nowrap text-5xl font-bold text-zinc-100">Rapid Path</h1>
@@ -118,12 +118,12 @@ export default function RapidPathPage() {
 
                     <div className={showUiPanels ? "relative" : "relative"}>
                         <div
-                            className="aspect-square box-border shrink-0 overflow-hidden border border-white/10 bg-black"
+                            className="aspect-square box-border shrink-0 overflow-hidden ring ring-inset ring-black bg-brand-orange"
                             style={{ width: boardSize }}
                         >
                             <iframe
                                 ref={gameFrameRef}
-                                src={shouldLoadGame ? "/game.html" : "about:blank"}
+                                src={shouldLoadGame ? "/games/rapid-path/game.html" : "about:blank"}
                                 title="Reaction Lab Unity WebGL"
                                 className="h-full w-full border-0"
                                 allow="fullscreen; autoplay; gamepad"
