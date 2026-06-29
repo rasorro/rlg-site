@@ -117,9 +117,9 @@ function createBubbleSprite() {
     const radius = 44;
 
     const fill = ctx.createRadialGradient(center - 10, center - 12, 6, center, center, radius);
-    fill.addColorStop(0, "rgba(142, 255, 139, 1.0)");
-    fill.addColorStop(0.45, "rgba(142, 255, 139, 1.0)");
-    fill.addColorStop(1, "rgba(145, 138, 129, 1.0)");
+    fill.addColorStop(0, "rgba(0, 255, 117, 1.0)");
+    fill.addColorStop(0.45, "rgba(0, 255, 117, 1.0)");
+    fill.addColorStop(1, "rgba(57, 52, 94, 1.0)");
 
     ctx.fillStyle = fill;
     ctx.beginPath();

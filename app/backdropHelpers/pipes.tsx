@@ -76,7 +76,7 @@ export default function Pipes({ viewportSize, pipePaths, pipeScale }: PipesProps
 						<path
 							d={pipe.d}
 							fill="none"
-							stroke="var(--color-brand-background)"
+							stroke="var(--color-brand-glow)"
 							strokeOpacity={1}
 							strokeWidth={underShadowWidth}
 							strokeLinecap="round"
@@ -85,7 +85,7 @@ export default function Pipes({ viewportSize, pipePaths, pipeScale }: PipesProps
 						<path
 							d={pipe.d}
 							fill="none"
-							stroke="var(--color-brand-glow)"
+							stroke="var(--color-brand-background)"
 							strokeWidth={flowStrokeWidth}
 							strokeOpacity={0.9}
 							strokeLinecap="round"
