@@ -116,14 +116,14 @@ export default function RapidPathPage() {
                         <h1 className="absolute bottom-full left-1/2 z-10 mb-4 -translate-x-1/2 whitespace-nowrap text-5xl font-bold text-zinc-100">Rapid Path</h1>
                     )} */}
 
-                    <div className={showUiPanels ? "relative" : "relative"}>
+                    <div className={showUiPanels ? "relative" : "relative"}>    
                         <div
-                            className="aspect-square box-border shrink-0 overflow-hidden ring ring-inset ring-black bg-brand-orange"
+                            className="aspect-square box-border shrink-0 overflow-hidden ring ring-inset ring-black bg-brand-background"
                             style={{ width: boardSize }}
                         >
                             <iframe
                                 ref={gameFrameRef}
-                                src={shouldLoadGame ? "/games/rapid-path/game.html" : "about:blank"}
+                                src={shouldLoadGame ? "/optimized_assets/game_assets/rapid-path/game.html" : "about:blank"}
                                 title="Reaction Lab Unity WebGL"
                                 className="h-full w-full border-0"
                                 allow="fullscreen; autoplay; gamepad"
@@ -134,7 +134,7 @@ export default function RapidPathPage() {
 
                         <button
                             type="button"
-                            className="absolute z-10 inline-flex items-center justify-center rounded-lg border-2 border-black bg-brand-pipe text-brand-glow backdrop-blur transition hover:bg-brand-orange"
+                            className="absolute z-10 inline-flex items-center justify-center rounded-lg border-2 border-black bg-brand-pipe text-brand-text backdrop-blur transition hover:bg-brand-glow"
                             style={{ width: boardToggleSize, height: boardToggleSize, right: boardToggleInset, bottom: boardToggleInset }}
                             onClick={() => setShowUiPanels(!showUiPanels)}
                             aria-label={showUiPanels ? "Enter focus mode" : "Exit focus mode"}

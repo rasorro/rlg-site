@@ -16,7 +16,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/assets/rlg_Logo.png",
+        url: "/optimized_assets/global_assets/rlg_Logo.webp",
         alt: "Reaction Lab Games logo",
       },
     ],
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     title: "Rapid Path",
     description:
       "Play Rapid Path on Reaction Lab Games. A simple WASD fidget/puzzle game.",
-    images: ["/assets/rlg_Logo.png"],
+    images: ["/optimized_assets/global_assets/rlg_Logo.webp"],
   },
 };
 

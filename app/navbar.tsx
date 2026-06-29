@@ -9,14 +9,14 @@ export default function Navbar() {
     if (!showUiPanels) return null;
 
     const navButtonClass =
-        "relative inline-flex items-center overflow-hidden rounded-xl border-3 border-white/40 ring-2 ring-black bg-brand-orange px-[0.7em] py-[0.3em] leading-none text-brand-pink";
+        "relative inline-flex items-center overflow-hidden rounded-xl border-3 border-white/40 ring-2 ring-black bg-brand-button px-[0.7em] py-[0.3em] leading-none text-brand-text";
 
     const navMetalStyle = {
         backgroundImage: [
             "linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.12) 22%, rgba(0, 0, 0, 0.2) 62%, rgba(255, 255, 255, 0.08) 100%)",
             "radial-gradient(120% 80% at 50% -30%, rgba(255, 255, 255, 0.36) 0%, rgba(255, 255, 255, 0) 62%)",
             "linear-gradient(to right, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0) 12%, rgba(255, 255, 255, 0.06) 24%, rgba(255, 255, 255, 0) 36%, rgba(255, 255, 255, 0.05) 48%, rgba(255, 255, 255, 0) 60%, rgba(255, 255, 255, 0.05) 72%, rgba(255, 255, 255, 0) 84%, rgba(255, 255, 255, 0.06) 100%)",
-            "url('/assets/rlg_Navbar_alt.webp')",
+            "url('/optimized_assets/global_assets/rlg_Navbar_alt.webp')",
         ].join(", "),
         backgroundSize: "500% 500%, 500% 500%, 500% 500%, auto 500%",
         backgroundPosition: "center, center, center, center",
@@ -38,7 +38,7 @@ export default function Navbar() {
             style={navMetalStyle}
         >
             <div className="flex h-full items-center gap-[var(--rlg-nav-gap)] font-bold" style={{ fontSize: "calc(var(--rlg-nav-h) * 0.45)" }}>
-                <div aria-label="Reaction Lab Games" className="leading-none bg-brand-pink px-[0.5em] py-[0.2em] border-3 border-black text-center translate-x-[0.5em]">
+                <div aria-label="Reaction Lab Games" className="leading-none bg-brand-background px-[0.5em] py-[0.2em] border-3 border-black text-center translate-x-[0.5em]">
                     <span className="engraved-title relative top-[0.1em] hidden max-[1300px]:inline">RLG</span>
                     <span className="engraved-title relative top-[0.1em] inline max-[1300px]:hidden">REACTION LAB GAMES</span>
                 </div>
@@ -77,7 +77,7 @@ export default function Navbar() {
                     viewBox="0 0 100 100"
                     className="absolute inset-0 h-full w-full"
                     xmlns="http://www.w3.org/2000/svg"
-                    fill="var(--color-brand-pink)"
+                    fill="var(--color-brand-accent)"
                     aria-hidden="true"
                 >
                 </svg>

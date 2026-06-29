@@ -3,14 +3,12 @@
 @theme inline {
   --font-sans: var(--font-bagel-fat-one);
   --font-mono: var(--font-bagel-fat-one);
-  --color-brand-cream: #fff770;
-  --color-brand-orange: #ff9f00;
-  --color-brand-orange-alt: #FFB03B;
-  --color-brand-glow: #8eff8b;
+  --color-brand-button: #FF3B26;
+  --color-brand-text: #00ff75fa;
+  --color-brand-accent: #ff665aff;
+  --color-brand-glow: #00ff75fa;
   --color-brand-pipe: #918A81;
-  --color-brand-background: #383A47;
-  --color-brand-pink: #ff665aff;
-  --color-brand-water: #0AFA90;
+  --color-brand-background: #39345E;
   --color-rapidPath: #00A405;
   --color-stickman: #00A8DB;
   --color-swerve: #FFF300;
@@ -23,9 +21,6 @@
 
 html,
 body {
-  background-image: url("/assets/rlg_background.jpg");
-  background-repeat: repeat;
-  background-size: clamp(120px, 20vw, 4000px);
   scrollbar-width: thin;
   scrollbar-color: var(--color-brand-pipe) var(--color-brand-background);
   -ms-overflow-style: auto;
@@ -71,11 +66,14 @@ body::-webkit-scrollbar-thumb {
 }
 
 body {
-  background-image: url("/assets/rlg_background.jpg");
-  background-repeat: repeat;
-  background-size: clamp(120px, 20vw, 4000px);
   background-position: center;
   background-position-y: 0px;
+}
+
+body.homepage-background {
+  background-image: url("/optimized_assets/global_assets/rlg_background.webp");
+  background-repeat: repeat;
+  background-size: clamp(120px, 20vw, 4000px);
 }
 
 @keyframes pipe-drift {
@@ -141,6 +139,20 @@ body {
   fill: rgba(0, 255, 157, 0.9);
 }
 
+@keyframes logo-glow-pulse {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 0.95;
+  }
+}
+
+.logo-image-glow-pulse {
+  animation: logo-glow-pulse 2.4s ease-in-out infinite;
+}
+
 .engraved-title {
   color: var(--color-brand-glow);
   -webkit-text-stroke: 1.2px rgba(0, 0, 0, 0.6);
@@ -163,6 +175,11 @@ body {
     animation: none;
     transform: translateY(-22%);
     opacity: 0.7;
+  }
+
+  .logo-image-glow-pulse {
+    animation: none;
+    opacity: 0.82;
   }
 
 }

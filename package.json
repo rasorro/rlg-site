@@ -6,7 +6,11 @@
     "dev": "next dev --webpack",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "images:optimize": "node scripts/optimize-images.mjs",
+    "images:optimize:clean": "node scripts/optimize-images.mjs --clean=true",
+    "images:optimize:aggressive": "node scripts/optimize-images.mjs --quality=55 --max=1600",
+    "images:optimize:ultra": "node scripts/optimize-images.mjs --quality=1 --max=1024"
   },
   "dependencies": {
     "next": "16.2.4",
@@ -20,6 +24,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.4",
+    "sharp": "^0.34.4",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

@@ -1,6 +1,6 @@
 export default function AboutPage() {
     return (
-        <main className="relative z-[10] min-h-[calc(100dvh-var(--rlg-nav-h))] bg-brand-background px-6 py-16 text-brand-glow">
+        <main className="relative z-[10] min-h-[calc(100dvh-var(--rlg-nav-h))] bg-brand-background px-6 py-16 text-brand-text">
             <div className="mx-auto max-w-5xl border-3 border-black bg-brand-pipe p-6 sm:p-10">
                 <h1 className="engraved-title text-[3rem] font-bold">About RLG</h1>
                 <p className="engraved-text mt-4 text-[2rem] leading-relaxed">

@@ -107,12 +107,50 @@ export default function FactoryBackdrop({
 }: FactoryBackdropProps) {
   const hasHydrated = useHydratedFlag();
   const { viewportSize, circleMetrics, cardAnchors } = useOverlayGeometry(showFactoryEffects);
+  const [isLogoHovered, setIsLogoHovered] = useState(false);
   const navHeight = viewportSize.height * NAVBAR_HEIGHT_RATIO;
   const pipeScale = viewportSize.height / PIPE_BASE_VIEWPORT_HEIGHT;
 
+  useEffect(() => {
+    if (!hasHydrated || !showLogoCircle) {
+      return;
+    }
+
+    const hoverRadius = circleMetrics.radius * 1.04;
+    const hoverRadiusSq = hoverRadius * hoverRadius;
+
+    const syncHoverState = (clientX: number, clientY: number) => {
+      const dx = clientX - circleMetrics.cx;
+      const dy = clientY - circleMetrics.cy;
+      const isHovered = dx * dx + dy * dy <= hoverRadiusSq;
+      setIsLogoHovered((prev) => (prev === isHovered ? prev : isHovered));
+    };
+
+    const handleMouseMove = (event: MouseEvent) => {
+      syncHoverState(event.clientX, event.clientY);
+    };
+
+    const handleMouseLeave = () => {
+      setIsLogoHovered((prev) => (prev ? false : prev));
+    };
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseleave", handleMouseLeave);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseleave", handleMouseLeave);
+    };
+  }, [circleMetrics.cx, circleMetrics.cy, circleMetrics.radius, hasHydrated, showLogoCircle]);
+
   const circleBubbles = useMemo(
-    () => (hasHydrated ? createCircleBubbles(circleMetrics.diameter) : []),
-    [circleMetrics.diameter, hasHydrated],
+    () => (hasHydrated && showLogoCircle
+      ? createCircleBubbles(circleMetrics.diameter, {
+        countMultiplier: isLogoHovered ? 1.5 : 0.58,
+        speedMultiplier: isLogoHovered ? 5.0 : 1,
+      })
+      : []),
+    [circleMetrics.diameter, hasHydrated, isLogoHovered, showLogoCircle],
   );
 
   const pipePaths = useMemo(() => {

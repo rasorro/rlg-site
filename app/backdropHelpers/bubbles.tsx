@@ -6,6 +6,11 @@ const LIQUID_BUBBLE_POSITION_COUNT = 16;
 const LIQUID_BUBBLE_DURATION_MULTIPLIER = 2;
 const CIRCLE_BUBBLE_DURATION_MULTIPLIER = 1.6;
 
+type CircleBubbleOptions = {
+	countMultiplier?: number;
+	speedMultiplier?: number;
+};
+
 function clamp(value: number, min: number, max: number): number {
 	return Math.max(min, Math.min(max, value));
 }
@@ -60,12 +65,15 @@ export function rerollLiquidBubbleSpawnPosition(bubble: LiquidBubble, width: num
 	};
 }
 
-export function createCircleBubbles(diameter: number): LiquidBubble[] {
+export function createCircleBubbles(diameter: number, options: CircleBubbleOptions = {}): LiquidBubble[] {
 	if (diameter <= 0) {
 		return [];
 	}
 
-	const count = clamp(Math.round(diameter / 6), 14, 28);
+	const countMultiplier = options.countMultiplier ?? 1;
+	const speedMultiplier = options.speedMultiplier ?? 1;
+
+	const count = clamp(Math.round((diameter / 6) * countMultiplier), 8, 36);
 	const radius = diameter / 2;
 
 	return Array.from({ length: count }, (_, i) => {
@@ -76,7 +84,7 @@ export function createCircleBubbles(diameter: number): LiquidBubble[] {
 		const cy = radius * 1.62 - (i % 4) * 6;
 		const r = clamp(diameter * (0.018 + jitter * 0.02), 1.5, 6.5);
 		const rise = radius * 1.5;
-		const duration = (3 + (i % 5) * 0.4) * CIRCLE_BUBBLE_DURATION_MULTIPLIER;
+		const duration = ((3 + (i % 5) * 0.4) * CIRCLE_BUBBLE_DURATION_MULTIPLIER) / Math.max(0.1, speedMultiplier);
 		const delay = -(i * 0.45);
 		const drift = (i % 2 === 0 ? 1 : -1) * (1.4 + (i % 3) * 1.3);
 

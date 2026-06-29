@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
-        url: "/assets/rlg_Logo.png",
+        url: "/optimized_assets/global_assets/rlg_Logo.webp",
         alt: "Reaction Lab Games logo",
       },
     ],
@@ -37,12 +37,12 @@ export const metadata: Metadata = {
     title: "Reaction Lab Games",
     description:
       "Welcome to Reaction Lab Games! Play Rapid Path for free now! Coming soon: Stickman-Skydive-Simulator, Swerve.",
-    images: ["/assets/rlg_Logo.png"],
+    images: ["/optimized_assets/global_assets/rlg_Logo.webp"],
   },
   icons: {
-    icon: "/assets/favicon.ico",
-    shortcut: "/assets/favicon.ico",
-    apple: "/assets/rlg_Logo.png",
+    icon: "/optimized_assets/global_assets/favicon.ico",
+    shortcut: "/optimized_assets/global_assets/favicon.ico",
+    apple: "/optimized_assets/global_assets/rlg_Logo.webp",
   },
 };
 

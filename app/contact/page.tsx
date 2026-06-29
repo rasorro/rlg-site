@@ -5,10 +5,10 @@ export default function ContactPage() {
         <main className="relative z-[10] min-h-[calc(100dvh-var(--rlg-nav-h))] bg-brand-background px-6 py-16 text-brand-glow">
             <div className="mx-auto max-w-5xl border-3 border-black bg-brand-pipe p-6 sm:p-10">
                 <h1 className="engraved-title text-[3rem] font-bold">Contact</h1>
-                <ul className="mt-4 space-y-3 text-[2rem] leading-relaxed text-brand-glow/90">
+                <ul className="mt-4 space-y-3 text-[2rem] leading-relaxed text-brand-text">
                     <li className="engraved-text">
                         Email:{" "}
-                        <a href="mailto:reactionlabgames@gmail.com" className="text-brand-orange-alt underline">
+                        <a href="mailto:reactionlabgames@gmail.com" className="text-brand-accent underline">
                             reactionlabgames@gmail.com
                         </a>
                     </li>
@@ -18,7 +18,7 @@ export default function ContactPage() {
                             href="https://www.instagram.com/reactionlabgames"
                             target="_blank"
                             rel="noreferrer"
-                            className="text-brand-orange-alt underline"
+                            className="text-brand-accent underline"
                         >
                             @reactionlabgames
                         </a>

@@ -15,9 +15,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
     useEffect(() => {
         document.body.classList.toggle("no-fog", !showFactoryEffects);
+        document.body.classList.toggle("homepage-background", showFactoryEffects);
 
         return () => {
             document.body.classList.remove("no-fog");
+            document.body.classList.remove("homepage-background");
         };
     }, [showFactoryEffects]);
 
