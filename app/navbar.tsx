@@ -51,8 +51,8 @@ export default function Navbar() {
                             className="pointer-events-none absolute inset-0 z-0"
                             style={{ background: "linear-gradient(to bottom, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.15) 45%, rgba(255, 255, 255, 0))" }}
                         />
-                        <span className="engraved-title relative z-10 hidden max-[900px]:inline">A</span>
-                        <span className="engraved-title relative z-10 inline max-[900px]:hidden">ABOUT</span>
+                        <span className="engraved-title relative z-10 hidden max-[1200px]:inline">A</span>
+                        <span className="engraved-title relative z-10 inline max-[1200px]:hidden">ABOUT</span>
                     </TransitionLink>
 
                     <TransitionLink href="/contact" className={navButtonClass} aria-label="Go to Contact page">
@@ -62,8 +62,8 @@ export default function Navbar() {
                             className="pointer-events-none absolute inset-0 z-0"
                             style={{ background: "linear-gradient(to bottom, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.15) 45%, rgba(255, 255, 255, 0))" }}
                         />
-                        <span className="engraved-title relative z-10 hidden max-[900px]:inline">C</span>
-                        <span className="engraved-title relative z-10 inline max-[900px]:hidden">CONTACT</span>
+                        <span className="engraved-title relative z-10 hidden max-[1200px]:inline">C</span>
+                        <span className="engraved-title relative z-10 inline max-[1200px]:hidden">CONTACT</span>
                     </TransitionLink>
                 </div>
             </div>

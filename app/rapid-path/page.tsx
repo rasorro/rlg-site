@@ -109,7 +109,7 @@ export default function RapidPathPage() {
     }, [showUiPanels, requestGameFocus]);
 
     return (
-        <main className={`relative flex flex-col ${pageHeightClass} w-full items-center overflow-y-auto bg-brand-background`}>
+        <main className={`relative flex flex-col ${pageHeightClass} w-full items-center overflow-y-auto bg-brand-background-dark`}>
             <div className={showUiPanels ? "flex flex-col items-center gap-8 pt-[calc(var(--rlg-nav-h)-1rem)] pb-0" : "flex flex-col items-center gap-0 my-auto"}>
                 <div className={showUiPanels ? "relative flex flex-col items-center gap-4" : "relative flex flex-col items-center gap-0"}>
                     {/* {showUiPanels && (
