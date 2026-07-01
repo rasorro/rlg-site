@@ -9,7 +9,7 @@ export default function Navbar() {
     if (!showUiPanels) return null;
 
     const navButtonClass =
-        "relative inline-flex items-center overflow-hidden rounded-xl border-3 border-white/40 ring-2 ring-black bg-brand-button px-[0.7em] py-[0.3em] leading-none text-brand-text";
+        "relative inline-flex items-center overflow-hidden rounded-xl border-3 border-white/40 ring-2 ring-black bg-brand-button px-[0.7em] py-[0.3em] leading-none text-brand-text transition hover:bg-brand-glow";
 
     const navMetalStyle = {
         backgroundImage: [

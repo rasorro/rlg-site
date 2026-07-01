@@ -134,7 +134,7 @@ export default function RapidPathPage() {
 
                         <button
                             type="button"
-                            className="absolute z-10 inline-flex items-center justify-center rounded-lg border-2 border-black bg-brand-pipe text-brand-text backdrop-blur transition hover:bg-brand-glow"
+                            className="absolute z-10 inline-flex items-center justify-center rounded-lg border-2 border-black bg-brand-accent text-brand-text backdrop-blur transition hover:bg-brand-glow"
                             style={{ width: boardToggleSize, height: boardToggleSize, right: boardToggleInset, bottom: boardToggleInset }}
                             onClick={() => setShowUiPanels(!showUiPanels)}
                             aria-label={showUiPanels ? "Enter focus mode" : "Exit focus mode"}

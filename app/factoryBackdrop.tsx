@@ -170,7 +170,7 @@ export default function FactoryBackdrop({
       )}
 
       {showLogoCircle && (
-        <Logo circleMetrics={circleMetrics} bubbles={circleBubbles} />
+        <Logo circleMetrics={circleMetrics} bubbles={circleBubbles} isHovered={isLogoHovered} />
       )}
     </>
   );

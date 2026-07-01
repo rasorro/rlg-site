@@ -4,9 +4,12 @@ import type { CircleMetrics, LiquidBubble } from "./types";
 type LogoProps = {
 	circleMetrics: CircleMetrics;
 	bubbles: LiquidBubble[];
+	isHovered: boolean;
 };
 
-function Logo({ circleMetrics, bubbles }: LogoProps) {
+function Logo({ circleMetrics, bubbles, isHovered }: LogoProps) {
+	const baseFillColor = isHovered ? "var(--color-brand-glow)" : "var(--color-brand-button)";
+
 	const logoImageGeometry = useMemo(() => {
 		const size = circleMetrics.diameter * 0.64;
 		const x = circleMetrics.diameter * 0.18;
@@ -56,7 +59,7 @@ function Logo({ circleMetrics, bubbles }: LogoProps) {
 					</filter>
 				</defs>
 
-				<circle cx={circleMetrics.radius} cy={circleMetrics.radius} r={circleMetrics.radius - 2} fill="var(--color-brand-logo)" fillOpacity="1" />
+				<circle cx={circleMetrics.radius} cy={circleMetrics.radius} r={circleMetrics.radius - 2} fill={baseFillColor} fillOpacity="1" />
 				<g clipPath="url(#liquid-logo-circle-clip)">
 					<image
 						href="/optimized_assets/global_assets/rlg_Logo.webp"

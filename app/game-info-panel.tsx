@@ -17,7 +17,7 @@ function SectionText({ text }: { text: string }) {
 
 function SectionList({ items }: { items: string[] }) {
     return (
-        <ul className="engraved-text mt-2 list-disc space-y-1 pl-5 text-[1.5rem] leading-snug text-brand-text marker:text-brand-accent">
+        <ul className="engraved-text mt-2 list-disc space-y-1 pl-5 text-[1.5rem] leading-snug text-brand-text marker:text-brand-background">
             {items.map((item) => (
                 <li key={item}>{item}</li>
             ))}
@@ -28,7 +28,7 @@ function SectionList({ items }: { items: string[] }) {
 function ControlKey({ label, className = "" }: { label: string; className?: string }) {
     return (
         <span
-            className={`inline-flex h-8 w-8 items-center justify-center rounded-md border border-black/80 bg-black/35 text-[1.25rem] font-black tracking-wide text-brand-accent ${className}`}
+            className={`inline-flex h-8 w-8 items-center justify-center rounded-md border border-black/80 bg-black/35 text-[1.25rem] font-black tracking-wide text-brand-glow ${className}`}
         >
             {label}
         </span>
@@ -39,7 +39,7 @@ function ControlsDiagram() {
     return (
         <div className="mt-3 flex flex-wrap justify-center gap-3">
             <div className="w-fit rounded-md border border-black/75 bg-black/25 p-2">
-                <p className="engraved-text mb-2 text-center text-[1.5rem] font-bold uppercase tracking-wider text-brand-accent">WASD</p>
+                <p className="engraved-text mb-2 text-center text-[1.5rem] font-bold uppercase tracking-wider text-brand-glow">WASD</p>
                 <div className="mx-auto grid w-fit grid-cols-3 justify-items-center gap-1.5">
                     <span />
                     <ControlKey label="W" />
@@ -50,7 +50,7 @@ function ControlsDiagram() {
                 </div>
             </div>
             <div className="w-fit rounded-md border border-black/75 bg-black/25 p-2">
-                <p className="engraved-text mb-2 text-center text-[1.5rem] font-bold uppercase tracking-wider text-brand-accent">Arrows</p>
+                <p className="engraved-text mb-2 text-center text-[1.5rem] font-bold uppercase tracking-wider text-brand-glow">Arrows</p>
                 <div className="mx-auto grid w-fit grid-cols-3 justify-items-center gap-1.5">
                     <span />
                     <ControlKey label="↑" />

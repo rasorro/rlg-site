@@ -26,6 +26,20 @@ body {
   scrollbar-width: thin;
   scrollbar-color: var(--color-brand-pipe) var(--color-brand-background);
   -ms-overflow-style: auto;
+  cursor: url("/optimized_assets/global_assets/rlg_cursor.png") 0 0, auto;
+}
+
+a,
+button,
+summary,
+select,
+label[for],
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+[role="button"],
+[data-cursor="interactive"] {
+  cursor: url("/optimized_assets/global_assets/rlg_cursor_hover.png") 0 0, pointer;
 }
 
 html::-webkit-scrollbar,
@@ -138,7 +152,7 @@ body.homepage-background {
 }
 
 .liquid-bubble-logo {
-  fill: rgba(0, 255, 157, 0.9);
+  fill: var(--color-brand-glow);
 }
 
 @keyframes logo-glow-pulse {
