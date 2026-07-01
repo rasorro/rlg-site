@@ -56,7 +56,7 @@ function Logo({ circleMetrics, bubbles }: LogoProps) {
 					</filter>
 				</defs>
 
-				<circle cx={circleMetrics.radius} cy={circleMetrics.radius} r={circleMetrics.radius - 2} fill="var(--color-brand-background)" fillOpacity="1" />
+				<circle cx={circleMetrics.radius} cy={circleMetrics.radius} r={circleMetrics.radius - 2} fill="var(--color-brand-logo)" fillOpacity="1" />
 				<g clipPath="url(#liquid-logo-circle-clip)">
 					<image
 						href="/optimized_assets/global_assets/rlg_Logo.webp"
@@ -78,7 +78,7 @@ function Logo({ circleMetrics, bubbles }: LogoProps) {
 						height={logoImageGeometry.size}
 						preserveAspectRatio="xMidYMid meet"
 					/>
-					<circle cx={circleMetrics.radius} cy={circleMetrics.radius} r={circleMetrics.radius - 3} fill="rgba(255, 255, 255, 0.15)" />
+					<circle cx={circleMetrics.radius} cy={circleMetrics.radius} r={circleMetrics.radius - 3} fill="rgba(255, 255, 255, 0.2)" />
 					<circle cx={circleMetrics.radius} cy={circleMetrics.radius} r={circleMetrics.radius - 3} fill="url(#liquid-logo-highlight)" fillOpacity="0.8" />
 					{bubbles.map((bubble) => {
 						const bubbleStyle = {
