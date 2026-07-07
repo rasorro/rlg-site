@@ -1,4 +1,16 @@
+import type { Metadata } from "next";
 import { TransitionLink } from "../page-transition";
+
+export const metadata: Metadata = {
+    title: "Contact",
+    description: "Contact Reaction Lab Games by email or Instagram.",
+    alternates: {
+        canonical: "/contact",
+    },
+    openGraph: {
+        url: "/contact",
+    },
+};
 
 export default function ContactPage() {
     return (

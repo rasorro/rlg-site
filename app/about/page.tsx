@@ -1,3 +1,16 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+    title: "About",
+    description: "Learn about Reaction Lab Games and the team building our games.",
+    alternates: {
+        canonical: "/about",
+    },
+    openGraph: {
+        url: "/about",
+    },
+};
+
 export default function AboutPage() {
     return (
         <main className="relative z-[10] min-h-[calc(100dvh-var(--rlg-nav-h))] bg-brand-background px-6 py-16 text-brand-text">

@@ -1,4 +1,16 @@
+import type { Metadata } from "next";
 import { TransitionLink } from "../page-transition";
+
+export const metadata: Metadata = {
+    title: "Swerve",
+    description: "Swerve is in development. Check back for release details and gameplay updates.",
+    alternates: {
+        canonical: "/swerve",
+    },
+    openGraph: {
+        url: "/swerve",
+    },
+};
 
 export default function SwervePage() {
     return (
