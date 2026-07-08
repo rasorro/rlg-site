@@ -11,7 +11,7 @@ const universalFont = Coiny({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://reactionlabgames.com"),
+  metadataBase: new URL("https://www.reactionlabgames.com"),
   title: {
     default: "Reaction Lab Games",
     template: "%s | Reaction Lab Games",

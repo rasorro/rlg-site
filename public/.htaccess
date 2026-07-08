@@ -1,10 +1,10 @@
 RewriteEngine On
 Options -Indexes
 
-# Canonical redirects: force https + non-www and clean URLs.
-RewriteCond %{HTTP_HOST} ^www\.reactionlabgames\.com$ [NC,OR]
+# Canonical redirects: force https + www and clean URLs.
+RewriteCond %{HTTP_HOST} !^www\.reactionlabgames\.com$ [NC,OR]
 RewriteCond %{HTTPS} !=on
-RewriteRule ^ https://reactionlabgames.com%{REQUEST_URI} [R=301,L]
+RewriteRule ^ https://www.reactionlabgames.com%{REQUEST_URI} [R=301,L]
 
 RewriteCond %{THE_REQUEST} \s/+index\.html[\s?] [NC]
 RewriteRule ^index\.html$ / [R=301,L]
