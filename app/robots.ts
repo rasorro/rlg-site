@@ -6,10 +6,13 @@ export default function robots(): MetadataRoute.Robots {
   const baseUrl = "https://reactionlabgames.com";
 
   return {
-    rules: {
-      userAgent: "*",
-      allow: "/",
-    },
+    rules: [
+      {
+        userAgent: "*",
+        allow: "/",
+        disallow: ["/*.html$", "/optimized_assets/", "/original_assets/", "/api/"],
+      },
+    ],
     sitemap: `${baseUrl}/sitemap.xml`,
     host: baseUrl,
   };
