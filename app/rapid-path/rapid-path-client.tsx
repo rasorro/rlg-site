@@ -38,6 +38,7 @@ export default function RapidPathClientPage() {
     const gameFrameRef = useRef<HTMLIFrameElement | null>(null);
     const [shouldLoadGame, setShouldLoadGame] = useState(false);
     const [isFullscreen, setIsFullscreen] = useState(false);
+    const [isGameReady, setIsGameReady] = useState(false);
 
     const focusModeSize = isFullscreen ? "min(90dvw, 90dvh)" : "min(100dvw, 100dvh)";
 
@@ -59,6 +60,27 @@ export default function RapidPathClientPage() {
 
         return () => window.clearTimeout(timeoutId);
     }, [isTransitioning, shouldLoadGame]);
+
+    useEffect(() => {
+        if (!shouldLoadGame) {
+            setIsGameReady(false);
+        }
+    }, [shouldLoadGame]);
+
+    useEffect(() => {
+        const handleGameMessage = (event: MessageEvent) => {
+            if (event.origin !== window.location.origin) {
+                return;
+            }
+
+            if (event.data?.type === "RLG_GAME_READY") {
+                setIsGameReady(true);
+            }
+        };
+
+        window.addEventListener("message", handleGameMessage);
+        return () => window.removeEventListener("message", handleGameMessage);
+    }, []);
 
     useEffect(() => {
         const syncFullscreenState = () => {
@@ -121,6 +143,14 @@ export default function RapidPathClientPage() {
                             className="aspect-square box-border shrink-0 overflow-hidden ring ring-inset ring-black bg-brand-background"
                             style={{ width: boardSize }}
                         >
+                            {!isGameReady && (
+                                <div
+                                    className="pointer-events-none absolute inset-0 z-[1] flex items-center justify-center bg-brand-background"
+                                    aria-live="polite"
+                                >
+                                    <span className="text-2xl font-bold uppercase tracking-wide text-brand-text">Loading...</span>
+                                </div>
+                            )}
                             <iframe
                                 ref={gameFrameRef}
                                 src={shouldLoadGame ? "/optimized_assets/game_assets/rapid-path/game.html" : "about:blank"}
@@ -128,7 +158,10 @@ export default function RapidPathClientPage() {
                                 className="h-full w-full border-0"
                                 allow="fullscreen; autoplay; gamepad"
                                 loading="eager"
-                                onLoad={requestGameFocus}
+                                onLoad={() => {
+                                    setIsGameReady(false);
+                                    requestGameFocus();
+                                }}
                             />
                         </div>
 

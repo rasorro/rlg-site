@@ -12,11 +12,18 @@
         padding: 0;
         overflow: hidden;
         background-color: #3D3047;
+        cursor: url("/optimized_assets/global_assets/rlg_cursor.png") 0 0, auto;
+      }
+      body {
+        position: relative;
       }
       #unity-canvas {
+        position: absolute;
+        inset: 0;
         width: 100% !important;
         height: 100% !important;
         display: block;
+        cursor: inherit;
         /* Customize what is visible while Unity is not actively rendering. */
         background-color: #3D3047;
       }
@@ -93,6 +100,7 @@
         // matchWebGLToCanvasSize: false, // Uncomment this to separately control WebGL canvas render size and DOM element size.
         // devicePixelRatio: 1, // Uncomment this to override low DPI rendering on high DPI displays.
       }).then((unityInstance) => {
+        window.parent.postMessage({ type: "RLG_GAME_READY" }, window.location.origin);
         focusGameCanvas();
       }).catch((message) => {
         alert(message);

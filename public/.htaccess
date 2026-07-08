@@ -12,9 +12,10 @@ RewriteRule ^index\.html$ / [R=301,L]
 RewriteCond %{THE_REQUEST} \s/+(.+?)\.html[\s?] [NC]
 RewriteRule ^ %1 [R=301,L]
 
-RewriteCond %{REQUEST_URI} .+/$
-RewriteCond %{REQUEST_URI} !^/$
-RewriteRule ^(.+)/$ /$1 [R=301,L]
+# For exported directory routes, prefer canonical trailing slash when a real directory exists.
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteCond %{REQUEST_URI} !/$
+RewriteRule ^(.+)$ /$1/ [R=301,L]
 
 # Serve pre-compressed .gz variants when browser supports gzip
 RewriteCond %{HTTP:Accept-Encoding} gzip
@@ -22,9 +23,20 @@ RewriteCond %{REQUEST_URI} !\.gz$
 RewriteCond %{REQUEST_FILENAME}.gz -f
 RewriteRule ^(.*)$ $1.gz [L]
 
-# Serve /path/ as /path.html for Next.js static export routes
+# Serve exported extensionless routes.
+# 1) /path or /path/ -> /path/index.html when that file exists.
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_URI} !\.[^/]+$
+RewriteCond %{DOCUMENT_ROOT}/$1/index.html -f
+RewriteRule ^(.+?)/?$ /$1/index.html [L]
+
+# 2) Backward-compatible fallback: /path or /path/ -> /path.html when present.
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteCond %{REQUEST_URI} !\.[^/]+$
 RewriteCond %{DOCUMENT_ROOT}/$1.html -f
-RewriteRule ^([^/]+)/?$ /$1.html [L]
+RewriteRule ^(.+?)/?$ /$1.html [L]
 
 RewriteRule ^(.*/__next\.[^/]+)\.__PAGE__\.txt$ /$1/__PAGE__.txt [L]
 
