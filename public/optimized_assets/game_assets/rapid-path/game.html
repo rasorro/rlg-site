@@ -24,7 +24,7 @@
   </head>
   <body>
     <canvas id="unity-canvas" tabindex="0"></canvas>
-    <script src="Build/Unity Builds.loader.js"></script>
+    <script src="Build/Build.loader.js"></script>
     <script>
       var canvas = document.querySelector("#unity-canvas");
       var resizeFocusTimer = null;
@@ -83,9 +83,9 @@
 
       createUnityInstance(document.querySelector("#unity-canvas"), {
         arguments: [],
-        dataUrl: "Build/Unity Builds.data",
-        frameworkUrl: "Build/Unity Builds.framework.js",
-        codeUrl: "Build/Unity Builds.wasm",
+        dataUrl: "Build/Build.data",
+        frameworkUrl: "Build/Build.framework.js",
+        codeUrl: "Build/Build.wasm",
         streamingAssetsUrl: "StreamingAssets",
         companyName: "Reaction Lab LLC",
         productName: "Project_Vagabond",
