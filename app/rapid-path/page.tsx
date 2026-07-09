@@ -5,10 +5,10 @@ export const metadata: Metadata = {
     title: "Rapid Path",
     description: "Play Rapid Path in your browser and race to connect every highlighted dot before time runs out.",
     alternates: {
-        canonical: "/rapid-path",
+        canonical: "/rapid-path/",
     },
     openGraph: {
-        url: "/rapid-path",
+        url: "/rapid-path/",
     },
 };
 
