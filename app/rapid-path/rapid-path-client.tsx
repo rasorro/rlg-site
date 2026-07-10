@@ -109,6 +109,12 @@ export default function RapidPathClientPage() {
         };
     }, []);
 
+    useEffect(() => {
+        if (isFullscreen && showUiPanels) {
+            setShowUiPanels(false);
+        }
+    }, [isFullscreen, setShowUiPanels, showUiPanels]);
+
     const requestGameFocus = useCallback(() => {
         const frame = gameFrameRef.current;
         if (!frame) return;
