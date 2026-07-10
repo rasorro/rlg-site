@@ -10,8 +10,9 @@ import { useUi } from "./ui-context";
 export default function AppShell({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const { showUiPanels } = useUi();
+    const isRapidPathRoute = pathname.startsWith("/rapid-path");
     const showFactoryEffects = pathname === "/";
-    const showLogoCircle = pathname !== "/rapid-path" || showUiPanels;
+    const showLogoCircle = !isRapidPathRoute || showUiPanels;
 
     useEffect(() => {
         document.body.classList.toggle("no-fog", !showFactoryEffects);
