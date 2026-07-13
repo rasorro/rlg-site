@@ -84,7 +84,7 @@ const GameCardTile = memo(function GameCardTile({ game, index, prefersReducedMot
       <div aria-hidden className={VAT_LIQUID_LAYER_CLASS} style={{ background: VAT_LIQUID_BACKGROUND }} />
       <div aria-hidden className={VAT_GLASS_LAYER_CLASS} style={{ background: VAT_GLASS_BACKGROUND }} />
       <div aria-hidden className={VAT_GLOW_MASK_LAYER_CLASS} style={{ backgroundColor: game.gameColor, maskImage: `url('${GAME_CARD_GLOW_LAYER_SRC}')`, WebkitMaskImage: `url('${GAME_CARD_GLOW_LAYER_SRC}')`, ...GLOW_MASK_BASE_STYLE }} />
-      <Image src={GAME_CARD_METAL_LAYER_SRC} alt="" fill aria-hidden className="pointer-events-none z-[7] select-none" sizes={GAME_CARD_IMAGE_SIZES} />
+      <Image src={GAME_CARD_METAL_LAYER_SRC} alt="" fill aria-hidden className="pointer-events-none z-[7] select-none" sizes={GAME_CARD_IMAGE_SIZES} loading={index === 0 ? "eager" : "lazy"} />
       <div className="relative z-[20] flex h-full flex-col items-center justify-center gap-[16.65em]"><div className="flex h-[3.5em] items-center justify-center bg-brand-background w-[14em] border-[0.2em] border-black"><h2 className="engraved-title text-center text-[1.5em] leading-[0.9] font-bold">{game.title}</h2></div><CardAction isReady={game.isReady} href={game.href} onPlayHoverChange={setIsPlayHovered} /></div>
     </article>
   );

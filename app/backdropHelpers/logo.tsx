@@ -9,11 +9,14 @@ type LogoProps = {
 
 function Logo({ circleMetrics, bubbles, isHovered }: LogoProps) {
 	const baseFillColor = isHovered ? "var(--color-brand-glow)" : "var(--color-brand-button)";
+	const logoImageSrc = isHovered
+		? "/optimized_assets/global_assets/rlg_logo_alt_256.webp"
+		: "/optimized_assets/global_assets/rlg_logo_alt_2_256.webp";
 
 	const logoImageGeometry = useMemo(() => {
-		const size = circleMetrics.diameter * 0.64;
-		const x = circleMetrics.diameter * 0.18;
-		const y = circleMetrics.diameter * 0.18;
+		const size = circleMetrics.diameter * 0.9;
+		const x = circleMetrics.diameter * 0.05;
+		const y = circleMetrics.diameter * 0.05;
 
 		return { size, x, y };
 	}, [circleMetrics.diameter]);
@@ -62,7 +65,7 @@ function Logo({ circleMetrics, bubbles, isHovered }: LogoProps) {
 				<circle cx={circleMetrics.radius} cy={circleMetrics.radius} r={circleMetrics.radius - 2} fill={baseFillColor} fillOpacity="1" />
 				<g clipPath="url(#liquid-logo-circle-clip)">
 					<image
-						href="/optimized_assets/global_assets/rlg_Logo.webp"
+						href={logoImageSrc}
 						x={logoImageGeometry.x}
 						y={logoImageGeometry.y}
 						width={logoImageGeometry.size}
@@ -74,7 +77,7 @@ function Logo({ circleMetrics, bubbles, isHovered }: LogoProps) {
 						style={{ willChange: "opacity" }}
 					/>
 					<image
-						href="/optimized_assets/global_assets/rlg_Logo.webp"
+						href={logoImageSrc}
 						x={logoImageGeometry.x}
 						y={logoImageGeometry.y}
 						width={logoImageGeometry.size}
