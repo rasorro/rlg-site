@@ -5,6 +5,8 @@ import GameInfoPanel, { type InfoSection } from "../game-info-panel";
 import { usePageTransition } from "../page-transition";
 import { useUi } from "../ui-context";
 
+const RAPID_PATH_BUILD_VERSION = "1.0.0";
+
 const INFO_SECTIONS: InfoSection[] = [
     {
         title: "Controls",
@@ -153,7 +155,7 @@ export default function RapidPathClientPage() {
                             )}
                             <iframe
                                 ref={gameFrameRef}
-                                src={shouldLoadGame ? "/optimized_assets/game_assets/rapid-path/game.html" : "about:blank"}
+                                src={shouldLoadGame ? `/optimized_assets/game_assets/rapid-path/game.html?v=${RAPID_PATH_BUILD_VERSION}` : "about:blank"}
                                 title="Reaction Lab Unity WebGL"
                                 className="h-full w-full border-0"
                                 allow="fullscreen; autoplay; gamepad"

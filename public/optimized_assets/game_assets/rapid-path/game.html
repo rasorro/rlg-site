@@ -31,7 +31,7 @@
   </head>
   <body>
     <canvas id="unity-canvas" tabindex="0"></canvas>
-    <script src="Build/Unity Builds.loader.js"></script>
+    <script src="Build/Unity Builds.loader.js?v=1.0.0"></script>
     <script>
       var canvas = document.querySelector("#unity-canvas");
       var resizeFocusTimer = null;
@@ -90,13 +90,13 @@
 
       createUnityInstance(document.querySelector("#unity-canvas"), {
         arguments: [],
-        dataUrl: "Build/Unity Builds.data",
-        frameworkUrl: "Build/Unity Builds.framework.js",
-        codeUrl: "Build/Unity Builds.wasm",
+        dataUrl: "Build/Unity Builds.data?v=1.0.0",
+        frameworkUrl: "Build/Unity Builds.framework.js?v=1.0.0",
+        codeUrl: "Build/Unity Builds.wasm?v=1.0.0",
         streamingAssetsUrl: "StreamingAssets",
         companyName: "Reaction Lab LLC",
         productName: "Project_Vagabond",
-        productVersion: "0.1.0",
+        productVersion: "1.0.0",
         // matchWebGLToCanvasSize: false, // Uncomment this to separately control WebGL canvas render size and DOM element size.
         // devicePixelRatio: 1, // Uncomment this to override low DPI rendering on high DPI displays.
       }).then((unityInstance) => {
