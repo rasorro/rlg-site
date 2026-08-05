@@ -31,10 +31,14 @@
   </head>
   <body>
     <canvas id="unity-canvas" tabindex="0"></canvas>
-    <script src="Build/Unity Builds.loader.js?v=1.0.0"></script>
     <script>
       var canvas = document.querySelector("#unity-canvas");
       var resizeFocusTimer = null;
+      var buildVersion = new URLSearchParams(window.location.search).get("v") || "dev";
+
+      function versionedBuildUrl(filename) {
+        return "Build/" + filename + "?v=" + encodeURIComponent(buildVersion);
+      }
 
       function focusGameCanvas() {
         try {
@@ -88,23 +92,31 @@
 
       }
 
-      createUnityInstance(document.querySelector("#unity-canvas"), {
-        arguments: [],
-        dataUrl: "Build/Unity Builds.data?v=1.0.0",
-        frameworkUrl: "Build/Unity Builds.framework.js?v=1.0.0",
-        codeUrl: "Build/Unity Builds.wasm?v=1.0.0",
-        streamingAssetsUrl: "StreamingAssets",
-        companyName: "Reaction Lab LLC",
-        productName: "Project_Vagabond",
-        productVersion: "1.0.0",
-        // matchWebGLToCanvasSize: false, // Uncomment this to separately control WebGL canvas render size and DOM element size.
-        // devicePixelRatio: 1, // Uncomment this to override low DPI rendering on high DPI displays.
-      }).then((unityInstance) => {
-        window.parent.postMessage({ type: "RLG_GAME_READY" }, window.location.origin);
-        focusGameCanvas();
-      }).catch((message) => {
-        alert(message);
-      });
+      var loaderScript = document.createElement("script");
+      loaderScript.src = versionedBuildUrl("Unity Builds.loader.js");
+      loaderScript.onload = function () {
+        createUnityInstance(canvas, {
+          arguments: [],
+          dataUrl: versionedBuildUrl("Unity Builds.data"),
+          frameworkUrl: versionedBuildUrl("Unity Builds.framework.js"),
+          codeUrl: versionedBuildUrl("Unity Builds.wasm"),
+          streamingAssetsUrl: "StreamingAssets",
+          companyName: "Reaction Lab LLC",
+          productName: "Project_Vagabond",
+          productVersion: buildVersion,
+          // matchWebGLToCanvasSize: false, // Uncomment this to separately control WebGL canvas render size and DOM element size.
+          // devicePixelRatio: 1, // Uncomment this to override low DPI rendering on high DPI displays.
+        }).then(function () {
+          window.parent.postMessage({ type: "RLG_GAME_READY" }, window.location.origin);
+          focusGameCanvas();
+        }).catch(function (message) {
+          alert(message);
+        });
+      };
+      loaderScript.onerror = function () {
+        console.error("Unable to load Unity loader for build " + buildVersion);
+      };
+      document.body.appendChild(loaderScript);
     </script>
   </body>
 </html>
