@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTouchPress } from "../touch-press";
 
 type DesktopOnlyPanelProps = {
     boardSize: string;
@@ -12,6 +13,7 @@ const BUTTON_GLOSS = "linear-gradient(to bottom, rgba(255, 255, 255, 0.35), rgba
 // Shown in place of the game board on touch-only devices, so they don't download the build unless they choose to play with swipe controls.
 export default function DesktopOnlyPanel({ boardSize, onLoadAnyway }: DesktopOnlyPanelProps) {
     const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">("idle");
+    const touchPressProps = useTouchPress();
 
     const copyLink = async () => {
         try {
@@ -38,7 +40,8 @@ export default function DesktopOnlyPanel({ boardSize, onLoadAnyway }: DesktopOnl
             <button
                 type="button"
                 onClick={copyLink}
-                className="relative inline-flex items-center overflow-hidden rounded-xl border-3 border-white/40 bg-brand-button px-[0.9em] py-[0.4em] font-bold leading-none ring-2 ring-black transition hover:bg-brand-glow"
+                {...touchPressProps("copy")}
+                className="relative inline-flex items-center overflow-hidden rounded-xl border-3 border-white/40 bg-brand-button px-[0.9em] py-[0.4em] font-bold leading-none ring-2 ring-black transition hover:bg-brand-glow active:bg-brand-glow data-[pressed=true]:bg-brand-glow"
             >
                 <span aria-hidden="true" className="pointer-events-none absolute inset-0 z-20 rounded-[10px] bg-white opacity-[0.15]" />
                 <span aria-hidden="true" className="pointer-events-none absolute inset-0 z-0" style={{ background: BUTTON_GLOSS }} />
@@ -50,7 +53,7 @@ export default function DesktopOnlyPanel({ boardSize, onLoadAnyway }: DesktopOnl
                 <p className="engraved-text text-[0.75em] leading-snug break-all">{window.location.href}</p>
             )}
 
-            <button type="button" onClick={onLoadAnyway} className="engraved-text text-[0.85em] underline opacity-80 transition hover:opacity-100">
+            <button type="button" onClick={onLoadAnyway} {...touchPressProps("load")} className="engraved-text text-[0.85em] underline opacity-80 transition hover:opacity-100 active:opacity-100 data-[pressed=true]:opacity-100">
                 Play here with swipe controls
             </button>
         </div>

@@ -5,16 +5,17 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import GameInfoPanel, { type InfoSection } from "../game-info-panel";
 import { useHasFinePointer } from "../input-capabilities";
 import { usePageTransition } from "../page-transition";
+import { useTouchPress } from "../touch-press";
 import { useUi } from "../ui-context";
 import DesktopOnlyPanel from "./desktop-only-panel";
 
 const RAPID_PATH_BUILD_VERSION = "1.0.3";
 
-const INFO_SECTIONS: InfoSection[] = [
-    {
-        title: "Controls",
-        text: "Swipe the board on phones and tablets. On computers, use WASD or the arrow keys.",
-    },
+// Keyboard devices get the WASD/arrows diagram; touch-only devices (after opting in) get swipe instructions instead.
+const KEYBOARD_CONTROLS: InfoSection = { title: "Controls", text: "" };
+const TOUCH_CONTROLS: InfoSection = { title: "Controls", text: "Swipe the board to move." };
+
+const OTHER_INFO_SECTIONS: InfoSection[] = [
     {
         title: "Goal",
         text: "Connect every highlighted dot in one continuous path.",
@@ -49,9 +50,12 @@ export default function RapidPathClientPage() {
 
     // Touch-only devices see the desktop panel instead of the game until they opt in; null means not yet hydrated.
     const hasFinePointer = useHasFinePointer();
+    const touchPressProps = useTouchPress();
     const canLoadGame = hasFinePointer === true || loadAnyway;
     const showDesktopOnlyPanel = hasFinePointer === false && !loadAnyway;
     const showControls = showUiPanels && canLoadGame;
+    const isTouchOnly = hasFinePointer === false;
+    const infoSections = [isTouchOnly ? TOUCH_CONTROLS : KEYBOARD_CONTROLS, ...OTHER_INFO_SECTIONS];
     const focusModeSize = isFullscreen ? "min(90dvw, 90dvh)" : "min(100dvw, 100dvh)";
 
     // Top padding clears the half of the flask hanging below the navbar; the board fills what's left of the viewport.
@@ -204,9 +208,10 @@ export default function RapidPathClientPage() {
 
                         {canLoadGame && <button
                             type="button"
-                            className="absolute z-10 inline-flex items-center justify-center rounded-lg border-2 border-black bg-brand-accent text-brand-text backdrop-blur transition hover:bg-brand-glow"
+                            className="absolute z-10 inline-flex items-center justify-center rounded-lg border-2 border-black bg-brand-accent text-brand-text backdrop-blur transition hover:bg-brand-glow active:bg-brand-glow data-[pressed=true]:bg-brand-glow"
                             style={{ width: boardToggleSize, height: boardToggleSize, right: boardToggleInset, bottom: boardToggleInset }}
                             onClick={() => setShowUiPanels(!showUiPanels)}
+                            {...touchPressProps("focus")}
                             aria-label={showUiPanels ? "Enter focus mode" : "Exit focus mode"}
                             title={showUiPanels ? "Enter focus mode" : "Exit focus mode"}
                         >
@@ -238,9 +243,9 @@ export default function RapidPathClientPage() {
 
                     {showControls && (
                         <GameInfoPanel
-                            sections={INFO_SECTIONS}
+                            sections={infoSections}
                             height={boardSize}
-                            showControlsDiagram
+                            showControlsDiagram={!isTouchOnly}
                             compact
                             fitContent
                             inline

@@ -43,6 +43,8 @@ type TransitionLinkProps = Omit<React.ComponentProps<typeof Link>, "href"> & {
 const COVER_DURATION_MS = 900;
 const ROUTE_SWITCH_COVERAGE = 0.9;
 const ROUTE_NAVIGATION_DELAY_MS = 900;
+// Reveal anyway if the route still hasn't changed this long after the screen is covered, so the bubbles can't loop forever.
+const ROUTE_READY_FALLBACK_MS = 3000;
 const BUBBLE_SIZE_MULTIPLIER = 4;
 const BUBBLE_SPEED_MULTIPLIER = 4;
 const BUBBLE_DENSITY_MULTIPLIER = 3;
@@ -74,6 +76,11 @@ function clamp01(value: number) {
 
 function fract(value: number) {
     return value - Math.floor(value);
+}
+
+// trailingSlash makes the current pathname "/about/" while links point at "/about".
+function normalizePath(path: string) {
+    return path.replace(/\/+$/, "") || "/";
 }
 
 function getBalancedSpawnRatio(spawnIndex: number, laneCounts: number[]): number {
@@ -181,6 +188,7 @@ export function PageTransitionProvider({ children, topOffset = "0px" }: PageTran
     const sizeRef = useRef({ width: 0, height: 0, dpr: 1 });
     const rafIdRef = useRef<number | null>(null);
     const navigationDelayIdRef = useRef<number | null>(null);
+    const routeFallbackIdRef = useRef<number | null>(null);
     const pendingHrefRef = useRef<string | null>(null);
     const pathAtStartRef = useRef(pathname);
     const modeRef = useRef<TransitionMode>("idle");
@@ -206,6 +214,10 @@ export function PageTransitionProvider({ children, topOffset = "0px" }: PageTran
         if (navigationDelayIdRef.current !== null) {
             window.clearTimeout(navigationDelayIdRef.current);
             navigationDelayIdRef.current = null;
+        }
+        if (routeFallbackIdRef.current !== null) {
+            window.clearTimeout(routeFallbackIdRef.current);
+            routeFallbackIdRef.current = null;
         }
         pendingHrefRef.current = null;
         coverageRef.current = 0;
@@ -421,13 +433,26 @@ export function PageTransitionProvider({ children, topOffset = "0px" }: PageTran
 
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
+        const previousSize = sizeRef.current;
         ctxRef.current = ctx;
         sizeRef.current = { width, height, dpr };
         targetBubbleCountRef.current = getBubbleFieldTargetCount(width, height);
-        bubblesRef.current = [];
-        smoothedFrameTimeMsRef.current = 16;
-        qualityScaleRef.current = 1;
-        spawnIndexRef.current = 0;
+
+        if (modeRef.current === "idle" || previousSize.width <= 1) {
+            bubblesRef.current = [];
+            smoothedFrameTimeMsRef.current = 16;
+            qualityScaleRef.current = 1;
+            spawnIndexRef.current = 0;
+        } else {
+            // Mid-transition resize (mobile address bar, rotation): keep the bubbles where they are on screen.
+            const scaleX = width / previousSize.width;
+            const heightDelta = previousSize.height - height;
+            bubblesRef.current = bubblesRef.current.map((bubble) => ({
+                ...bubble,
+                x: bubble.x * scaleX,
+                bornAtMs: bubble.bornAtMs + heightDelta / (bubble.speed * 0.001),
+            }));
+        }
         drawFrame(performance.now());
     }, [drawFrame]);
 
@@ -452,6 +477,10 @@ export function PageTransitionProvider({ children, topOffset = "0px" }: PageTran
                 window.clearTimeout(navigationDelayIdRef.current);
                 navigationDelayIdRef.current = null;
             }
+            if (routeFallbackIdRef.current !== null) {
+                window.clearTimeout(routeFallbackIdRef.current);
+                routeFallbackIdRef.current = null;
+            }
             observer.disconnect();
             window.removeEventListener("resize", handleResize);
         };
@@ -459,10 +488,13 @@ export function PageTransitionProvider({ children, topOffset = "0px" }: PageTran
 
     const startTransition = useCallback(
         (href: string) => {
-            if (href === pathname || mode !== "idle" || transitionLockRef.current) return;
+            if (mode !== "idle" || transitionLockRef.current) return;
+
+            // A link to the current page plays the full cover + reveal without navigating.
+            const isSamePage = normalizePath(href) === normalizePath(pathname);
 
             if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-                router.push(href);
+                if (!isSamePage) router.push(href);
                 return;
             }
 
@@ -474,8 +506,12 @@ export function PageTransitionProvider({ children, topOffset = "0px" }: PageTran
                 window.clearTimeout(navigationDelayIdRef.current);
                 navigationDelayIdRef.current = null;
             }
+            if (routeFallbackIdRef.current !== null) {
+                window.clearTimeout(routeFallbackIdRef.current);
+                routeFallbackIdRef.current = null;
+            }
             minCoverCompleteRef.current = false;
-            routeReadyRef.current = false;
+            routeReadyRef.current = isSamePage;
             drainingStartedRef.current = false;
             drainStartTimeRef.current = null;
             spawnEnabledRef.current = true;
@@ -488,16 +524,18 @@ export function PageTransitionProvider({ children, topOffset = "0px" }: PageTran
             targetBubbleCountRef.current = getBubbleFieldTargetCount(width, height);
             bubblesRef.current = [];
             setMode("covering");
-            navigationDelayIdRef.current = window.setTimeout(() => {
-                const pendingHref = pendingHrefRef.current;
-                if (!pendingHref) {
-                    navigationDelayIdRef.current = null;
-                    return;
-                }
+            if (!isSamePage) {
+                navigationDelayIdRef.current = window.setTimeout(() => {
+                    const pendingHref = pendingHrefRef.current;
+                    if (!pendingHref) {
+                        navigationDelayIdRef.current = null;
+                        return;
+                    }
 
-                router.push(pendingHref);
-                navigationDelayIdRef.current = null;
-            }, ROUTE_NAVIGATION_DELAY_MS);
+                    router.push(pendingHref);
+                    navigationDelayIdRef.current = null;
+                }, ROUTE_NAVIGATION_DELAY_MS);
+            }
             startActiveAnimation();
 
             animateCoverage(coverageRef.current, ROUTE_SWITCH_COVERAGE, COVER_DURATION_MS, () => {
@@ -512,6 +550,11 @@ export function PageTransitionProvider({ children, topOffset = "0px" }: PageTran
                 startActiveAnimation();
                 if (!routeReadyRef.current) {
                     setMode("waiting-route");
+                    routeFallbackIdRef.current = window.setTimeout(() => {
+                        routeFallbackIdRef.current = null;
+                        routeReadyRef.current = true;
+                        beginDrainIfReady();
+                    }, ROUTE_READY_FALLBACK_MS);
                 }
                 beginDrainIfReady();
             });

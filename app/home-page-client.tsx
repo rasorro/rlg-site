@@ -7,11 +7,12 @@ import type { CanvasSize, PipePath } from "./backdropHelpers/types";
 import { HOME_STACKED_QUERY } from "./home-layout";
 import { useHasFinePointer } from "./input-capabilities";
 import { TransitionLink } from "./page-transition";
+import { useTouchPress } from "./touch-press";
 
 const GAME_CARD_SIZE = "var(--rlg-gamecard-size)", GAME_CARD_IMAGE_SIZES = "(max-width: 1024px) 40vw, 70rem", GAME_CARD_FONT_SIZE = "calc(var(--rlg-gamecard-size) / 24)", GAME_CARD_GAP = "clamp(1rem, 5vw, 6rem)", GAME_CARD_VAT_LAYER_SRC = "/optimized_assets/global_assets/rlg_layer_vat.webp", GAME_CARD_GLOW_LAYER_SRC = "/optimized_assets/global_assets/rlg_layer_glow.svg", GAME_CARD_METAL_LAYER_SRC = "/optimized_assets/global_assets/rlg_layer_metal.webp", GAME_CARD_VAT_LAYER_OPACITY = 0, VAT_BUBBLES_VISIBLE_COUNT = 18, VAT_LIQUID_BACKGROUND = "linear-gradient(to top, rgba(0, 255, 157, 0) 0%, rgba(255, 0, 153, 0) 35%)", VAT_GLASS_BACKGROUND = "linear-gradient(to bottom, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.2) 28%, rgba(255, 255, 255, 0.15) 62%), radial-gradient(120% 75% at 50% -8%, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.02) 68%)", CARD_ACTION_GLOSS = "linear-gradient(to bottom, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.15) 45%, rgba(255, 255, 255, 0))", VAT_BUBBLE_SPEED_MULTIPLIER_BASE = 1, VAT_BUBBLE_SPEED_MULTIPLIER_HOVER = 6, STACKED_PIPE_SCALE_CARD_SIZE = 420, CENTER_BAND_ROOT_MARGIN = "-45% 0px -45% 0px";
 
 const CARD_GRID_STYLE = { "--rlg-gamecard-gap": GAME_CARD_GAP } as CSSProperties;
-const GAME_CARD_ARTICLE_CLASS = "group relative aspect-square overflow-hidden", GAME_CARD_IMAGE_WINDOW_CLASS = "pointer-events-none absolute left-1/2 top-1/2 z-[2] h-[12em] w-[12em] -translate-x-1/2 -translate-y-[50%] overflow-hidden border-[0.2em] border-black bg-brand-background", GAME_CARD_FROST_LAYER_CLASS = "pointer-events-none absolute inset-y-0 h-full w-[83%] left-1/2 -translate-x-1/2 z-[1] rounded-[33%] backdrop-blur-[0.3em] bg-white/25", VAT_BUBBLE_LAYER_CLASS = "pointer-events-none absolute inset-y-0 left-1/2 z-[3] h-full w-[83%] -translate-x-1/2 overflow-hidden rounded-[33%]", VAT_LIQUID_LAYER_CLASS = "pointer-events-none absolute inset-y-0 left-1/2 z-[4] h-full w-[83%] -translate-x-1/2 rounded-[33%]", VAT_GLASS_LAYER_CLASS = "pointer-events-none absolute inset-y-0 h-full w-[83%] left-1/2 -translate-x-1/2 z-[5] rounded-[33%] border-[0.2em] border-white/30 ring-3 ring-black", VAT_GLOW_MASK_LAYER_CLASS = "pointer-events-none absolute inset-0 z-[6]", CARD_ACTION_BASE_CLASS = "translate-y-[-0.4em] relative inline-flex items-center justify-center overflow-hidden rounded-full border-3 border-white/40 ring-2 ring-black w-[8em] h-[1.5em] text-[1.75em] font-bold leading-none text-brand-text transition hover:bg-brand-glow";
+const GAME_CARD_ARTICLE_CLASS = "group relative aspect-square overflow-hidden", GAME_CARD_IMAGE_WINDOW_CLASS = "pointer-events-none absolute left-1/2 top-1/2 z-[2] h-[12em] w-[12em] -translate-x-1/2 -translate-y-[50%] overflow-hidden border-[0.2em] border-black bg-brand-background", GAME_CARD_FROST_LAYER_CLASS = "pointer-events-none absolute inset-y-0 h-full w-[83%] left-1/2 -translate-x-1/2 z-[1] rounded-[33%] backdrop-blur-[0.3em] bg-white/25", VAT_BUBBLE_LAYER_CLASS = "pointer-events-none absolute inset-y-0 left-1/2 z-[3] h-full w-[83%] -translate-x-1/2 overflow-hidden rounded-[33%]", VAT_LIQUID_LAYER_CLASS = "pointer-events-none absolute inset-y-0 left-1/2 z-[4] h-full w-[83%] -translate-x-1/2 rounded-[33%]", VAT_GLASS_LAYER_CLASS = "pointer-events-none absolute inset-y-0 h-full w-[83%] left-1/2 -translate-x-1/2 z-[5] rounded-[33%] border-[0.2em] border-white/30 ring-3 ring-black", VAT_GLOW_MASK_LAYER_CLASS = "pointer-events-none absolute inset-0 z-[6]", CARD_ACTION_BASE_CLASS = "translate-y-[-0.4em] relative inline-flex items-center justify-center overflow-hidden rounded-full border-3 border-white/40 ring-2 ring-black w-[8em] h-[1.5em] text-[1.75em] font-bold leading-none text-brand-text transition hover:bg-brand-glow active:bg-brand-glow data-[pressed=true]:bg-brand-glow";
 const GLOW_MASK_BASE_STYLE = { opacity: 1, maskSize: "cover", maskPosition: "center", maskRepeat: "no-repeat", WebkitMaskSize: "cover", WebkitMaskRepeat: "no-repeat" } as const;
 
 type VatBubble = { id: number; cx: number; cy: number; r: number; driftPx: number; durationSeconds: number; delaySeconds: number; risePx: number; opacity: number };
@@ -53,13 +54,14 @@ const useHasHydrated = () => useSyncExternalStore(() => () => {}, () => true, ()
 
 function CardAction({ isReady, href, onPlayHoverChange }: CardActionProps) {
   const label = isReady ? "Play" : "Coming Soon";
+  const touchPressProps = useTouchPress(onPlayHoverChange);
   const actionChrome: ReactNode = <><span aria-hidden="true" className="pointer-events-none absolute inset-[0px] z-20 rounded-[9999px] bg-white opacity-[0.15]" /><span aria-hidden="true" className="pointer-events-none absolute inset-0 z-0" style={{ background: CARD_ACTION_GLOSS }} /><span className="engraved-title relative z-10 text-[0.9em]">{label}</span></>;
   return isReady ? (
-    <TransitionLink href={href} className={`${CARD_ACTION_BASE_CLASS} bg-brand-button`} onMouseEnter={() => onPlayHoverChange?.(true)} onMouseLeave={() => onPlayHoverChange?.(false)} onFocus={() => onPlayHoverChange?.(true)} onBlur={() => onPlayHoverChange?.(false)}>
+    <TransitionLink href={href} className={`${CARD_ACTION_BASE_CLASS} bg-brand-button`} onMouseEnter={() => onPlayHoverChange?.(true)} onMouseLeave={() => onPlayHoverChange?.(false)} onFocus={() => onPlayHoverChange?.(true)} onBlur={() => onPlayHoverChange?.(false)} {...touchPressProps()}>
       {actionChrome}
     </TransitionLink>
   ) : (
-    <span aria-disabled="true" className={`${CARD_ACTION_BASE_CLASS} bg-brand-background`}>{actionChrome}</span>
+    <span aria-disabled="true" className={`${CARD_ACTION_BASE_CLASS} bg-brand-background`} {...touchPressProps()}>{actionChrome}</span>
   );
 }
 

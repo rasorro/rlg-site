@@ -1,15 +1,17 @@
 "use client";
 
 import { TransitionLink } from "./page-transition";
+import { useTouchPress } from "./touch-press";
 import { useUi } from "./ui-context";
 
 export default function Navbar() {
     const { showUiPanels } = useUi();
+    const touchPressProps = useTouchPress();
 
     if (!showUiPanels) return null;
 
     const navButtonClass =
-        "relative inline-flex items-center overflow-hidden rounded-xl border-3 border-white/40 ring-2 ring-black bg-brand-button px-[0.7em] py-[0.3em] leading-none text-brand-text transition hover:bg-brand-glow";
+        "relative inline-flex items-center overflow-hidden rounded-xl border-3 border-white/40 ring-2 ring-black bg-brand-button px-[0.7em] py-[0.3em] leading-none text-brand-text transition hover:bg-brand-glow active:bg-brand-glow data-[pressed=true]:bg-brand-glow";
 
     const navMetalStyle = {
         backgroundImage: [
@@ -43,7 +45,7 @@ export default function Navbar() {
                 </div>
 
                 <div className="rlg-nav-actions">
-                    <TransitionLink href="/about" className={`rlg-nav-about ${navButtonClass}`} aria-label="Go to About page">
+                    <TransitionLink href="/about" className={`rlg-nav-about ${navButtonClass}`} aria-label="Go to About page" {...touchPressProps("about")}>
                         <span aria-hidden="true" className="pointer-events-none absolute inset-[0px] z-20 rounded-[10px] bg-white opacity-[0.15]" />
                         <span
                             aria-hidden="true"
@@ -53,7 +55,7 @@ export default function Navbar() {
                         <span className="engraved-title relative z-10">ABOUT</span>
                     </TransitionLink>
 
-                    <TransitionLink href="/contact" className={`rlg-nav-contact ${navButtonClass}`} aria-label="Go to Contact page">
+                    <TransitionLink href="/contact" className={`rlg-nav-contact ${navButtonClass}`} aria-label="Go to Contact page" {...touchPressProps("contact")}>
                         <span aria-hidden="true" className="pointer-events-none absolute inset-[0px] z-20 rounded-[10px] bg-white opacity-[0.15]" />
                         <span
                             aria-hidden="true"
