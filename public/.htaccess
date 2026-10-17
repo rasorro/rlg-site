@@ -57,3 +57,9 @@ RewriteRule ^(.*/__next\.[^/]+)\.__PAGE__\.txt$ /$1/__PAGE__.txt [L]
     Header set Content-Encoding "gzip"
     Header append Vary "Accept-Encoding"
 </FilesMatch>
+
+# Unity build filenames include the game version, so these assets can be cached
+# for a year without risking that an updated build is hidden behind stale cache.
+<FilesMatch "^RapidPath-[0-9]+(\.[0-9]+)*\.(data|framework\.js|loader\.js|wasm)(\.gz)?$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+</FilesMatch>

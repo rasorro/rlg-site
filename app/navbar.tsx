@@ -25,9 +25,9 @@ export default function Navbar() {
     } as const;
 
     const homeLinkStyle = {
-        width: "calc(var(--rlg-nav-h) * 1.35)",
-        height: "calc(var(--rlg-nav-h) * 1.35)",
-        top: "calc(var(--rlg-nav-h) / 15)",
+        width: "var(--rlg-flask-d)",
+        height: "var(--rlg-flask-d)",
+        top: "var(--rlg-flask-top)",
         clipPath: "circle(50% at 50% 50%)",
         WebkitClipPath: "circle(50% at 50% 50%)",
     } as const;
@@ -37,39 +37,37 @@ export default function Navbar() {
             className="relative z-10 h-[var(--rlg-nav-h)] shrink-0 border-b-3 border-black bg-brand-pipe px-[var(--rlg-nav-pad-x)]"
             style={navMetalStyle}
         >
-            <div className="flex h-full items-center gap-[var(--rlg-nav-gap)] font-bold" style={{ fontSize: "calc(var(--rlg-nav-h) * 0.45)" }}>
-                <div aria-label="Reaction Lab Games" className="leading-none bg-brand-background px-[0.5em] py-[0.2em] border-3 border-black text-center translate-x-[0.5em]">
-                    <span className="engraved-title relative top-[0.1em] hidden max-[1300px]:inline">RLG</span>
-                    <span className="engraved-title relative top-[0.1em] inline max-[1300px]:hidden">REACTION LAB GAMES</span>
+            <div className="rlg-nav-bar font-bold">
+                <div aria-label="Reaction Lab Games" className="rlg-nav-title leading-none bg-brand-background px-[0.5em] py-[0.2em] border-3 border-black text-center">
+                    <span className="engraved-title relative top-[0.1em] whitespace-nowrap">REACTION LAB GAMES</span>
                 </div>
 
-                <div className="ml-auto flex items-center gap-[var(--rlg-nav-gap)] text-[0.7em] translate-x-[-0.5em]">
-                    <TransitionLink href="/about" className={navButtonClass} aria-label="Go to About page">
+                <div className="rlg-nav-actions">
+                    <TransitionLink href="/about" className={`rlg-nav-about ${navButtonClass}`} aria-label="Go to About page">
                         <span aria-hidden="true" className="pointer-events-none absolute inset-[0px] z-20 rounded-[10px] bg-white opacity-[0.15]" />
                         <span
                             aria-hidden="true"
                             className="pointer-events-none absolute inset-0 z-0"
                             style={{ background: "linear-gradient(to bottom, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.15) 45%, rgba(255, 255, 255, 0))" }}
                         />
-                        <span className="engraved-title relative z-10 hidden max-[1200px]:inline">A</span>
-                        <span className="engraved-title relative z-10 inline max-[1200px]:hidden">ABOUT</span>
+                        <span className="engraved-title relative z-10">ABOUT</span>
                     </TransitionLink>
 
-                    <TransitionLink href="/contact" className={navButtonClass} aria-label="Go to Contact page">
+                    <TransitionLink href="/contact" className={`rlg-nav-contact ${navButtonClass}`} aria-label="Go to Contact page">
                         <span aria-hidden="true" className="pointer-events-none absolute inset-[0px] z-20 rounded-[10px] bg-white opacity-[0.15]" />
                         <span
                             aria-hidden="true"
                             className="pointer-events-none absolute inset-0 z-0"
                             style={{ background: "linear-gradient(to bottom, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.15) 45%, rgba(255, 255, 255, 0))" }}
                         />
-                        <span className="engraved-title relative z-10 hidden max-[1200px]:inline">C</span>
-                        <span className="engraved-title relative z-10 inline max-[1200px]:hidden">CONTACT</span>
+                        <span className="engraved-title relative z-10">CONTACT</span>
                     </TransitionLink>
                 </div>
             </div>
             <TransitionLink
                 href="/"
                 aria-label="Go to home"
+                data-rlg-flask="true"
                 className="absolute left-1/2 inline-flex shrink-0 -translate-x-1/2 items-center justify-center rounded-full p-0"
                 style={homeLinkStyle}
             >

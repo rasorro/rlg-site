@@ -1,67 +1,75 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { createCircleBubbles } from "./backdropHelpers/bubbles";
 import Logo from "./backdropHelpers/logo";
 import Pipes, { createPipePaths } from "./backdropHelpers/pipes";
 import type { AnchorPoint, CanvasSize, CircleMetrics } from "./backdropHelpers/types";
+import { HOME_STACKED_QUERY } from "./home-layout";
 
 type FactoryBackdropProps = {
   showFactoryEffects?: boolean;
   showLogoCircle?: boolean;
 };
 
-const INITIAL_CANVAS_SIZE: CanvasSize = { width: 1200, height: 600 };
 const INITIAL_VIEWPORT_SIZE: CanvasSize = { width: 1440, height: 900 };
-const PIPE_BASE_VIEWPORT_HEIGHT = 900;
-const NAVBAR_HEIGHT_RATIO = 0.1;
-const LOGO_DIAMETER_TO_NAV_RATIO = 10 / 7;
-const LOGO_TOP_TO_NAV_RATIO = 1 / 15;
+// Pipe strokes were tuned for a 90px nav row (10dvh at 900px tall), where the flask is 90 * 10/7 across.
+const PIPE_BASE_FLASK_DIAMETER = 90 * (10 / 7);
+const INITIAL_NAV_HEIGHT = 90;
+const LOGO_TOUCH_HOVER_MS = 1400;
 
-function roundRectValue(value: number): number {
-  return Math.round(value);
+function circleMetricsFromRect(rect: DOMRect): CircleMetrics {
+  const diameter = rect.width;
+  const radius = diameter / 2;
+
+  return { diameter, radius, cx: rect.left + radius, cy: rect.top + radius, top: rect.top };
 }
 
-
-function computeCircleMetrics(viewportWidth: number, viewportHeight: number): CircleMetrics {
-  const navHeight = viewportHeight * NAVBAR_HEIGHT_RATIO;
-  const diameter = navHeight * LOGO_DIAMETER_TO_NAV_RATIO;
+// Matches the CSS defaults (--rlg-flask-*) for a 1440x900 viewport, used until the navbar is measured.
+function initialCircleMetrics(): CircleMetrics {
+  const diameter = PIPE_BASE_FLASK_DIAMETER;
   const radius = diameter / 2;
-  const top = navHeight * LOGO_TOP_TO_NAV_RATIO;
-  const cx = viewportWidth / 2;
-  const cy = top + radius;
+  const top = INITIAL_NAV_HEIGHT / 15;
 
-  return { diameter, radius, cx, cy, top };
+  return { diameter, radius, cx: INITIAL_VIEWPORT_SIZE.width / 2, cy: top + radius, top };
 }
 
 function useHydratedFlag(): boolean {
-  const [hasHydrated, setHasHydrated] = useState(false);
-
-  useEffect(() => {
-    setHasHydrated(true);
-  }, []);
-
-  return hasHydrated;
+  return useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false
+  );
 }
 
 function useOverlayGeometry(showFactoryEffects: boolean): {
   viewportSize: CanvasSize;
   circleMetrics: CircleMetrics;
+  navBottom: number;
   cardAnchors: AnchorPoint[];
 } {
   const [viewportSize, setViewportSize] = useState<CanvasSize>(INITIAL_VIEWPORT_SIZE);
-  const [circleMetrics, setCircleMetrics] = useState<CircleMetrics>(() =>
-    computeCircleMetrics(INITIAL_VIEWPORT_SIZE.width, INITIAL_VIEWPORT_SIZE.height),
-  );
+  const [circleMetrics, setCircleMetrics] = useState<CircleMetrics>(initialCircleMetrics);
+  const [navBottom, setNavBottom] = useState(INITIAL_NAV_HEIGHT);
   const [cardAnchors, setCardAnchors] = useState<AnchorPoint[]>([]);
 
   useEffect(() => {
     const updateOverlayGeometry = () => {
       const nextViewport = { width: window.innerWidth, height: window.innerHeight };
       setViewportSize(nextViewport);
-      setCircleMetrics(computeCircleMetrics(nextViewport.width, nextViewport.height));
 
-      if (!showFactoryEffects) {
+      // The navbar's home link is the flask's footprint; it is absent when the navbar is hidden (Rapid Path focus mode).
+      const flaskAnchor = document.querySelector<HTMLElement>("[data-rlg-flask='true']");
+      if (flaskAnchor) {
+        setCircleMetrics(circleMetricsFromRect(flaskAnchor.getBoundingClientRect()));
+      }
+      const nav = document.querySelector<HTMLElement>("nav");
+      if (nav) {
+        setNavBottom(nav.getBoundingClientRect().bottom);
+      }
+
+      // Stacked (portrait) home layout scrolls, so the home page draws its own pipes inside the scrolling content.
+      if (!showFactoryEffects || window.matchMedia(HOME_STACKED_QUERY).matches) {
         setCardAnchors([]);
         return;
       }
@@ -98,7 +106,7 @@ function useOverlayGeometry(showFactoryEffects: boolean): {
     };
   }, [showFactoryEffects]);
 
-  return { viewportSize, circleMetrics, cardAnchors };
+  return { viewportSize, circleMetrics, navBottom, cardAnchors };
 }
 
 export default function FactoryBackdrop({
@@ -106,10 +114,9 @@ export default function FactoryBackdrop({
   showLogoCircle = true,
 }: FactoryBackdropProps) {
   const hasHydrated = useHydratedFlag();
-  const { viewportSize, circleMetrics, cardAnchors } = useOverlayGeometry(showFactoryEffects);
+  const { viewportSize, circleMetrics, navBottom, cardAnchors } = useOverlayGeometry(showFactoryEffects);
   const [isLogoHovered, setIsLogoHovered] = useState(false);
-  const navHeight = viewportSize.height * NAVBAR_HEIGHT_RATIO;
-  const pipeScale = viewportSize.height / PIPE_BASE_VIEWPORT_HEIGHT;
+  const pipeScale = circleMetrics.diameter / PIPE_BASE_FLASK_DIAMETER;
 
   useEffect(() => {
     if (!hasHydrated || !showLogoCircle) {
@@ -126,7 +133,9 @@ export default function FactoryBackdrop({
       setIsLogoHovered((prev) => (prev === isHovered ? prev : isHovered));
     };
 
-    const handleMouseMove = (event: MouseEvent) => {
+    // Pointer (not mouse) events, so a tap's emulated mouse events don't leave the flask stuck in its hover state.
+    const handlePointerMove = (event: PointerEvent) => {
+      if (event.pointerType === "touch") return;
       syncHoverState(event.clientX, event.clientY);
     };
 
@@ -134,12 +143,28 @@ export default function FactoryBackdrop({
       setIsLogoHovered((prev) => (prev ? false : prev));
     };
 
-    window.addEventListener("mousemove", handleMouseMove);
+    // Touch has no hover: a tap on the flask gives the same bubble surge for a moment.
+    let touchHoverTimeout = 0;
+    const handlePointerDown = (event: PointerEvent) => {
+      if (event.pointerType !== "touch") return;
+      const dx = event.clientX - circleMetrics.cx;
+      const dy = event.clientY - circleMetrics.cy;
+      if (dx * dx + dy * dy > hoverRadiusSq) return;
+
+      setIsLogoHovered(true);
+      window.clearTimeout(touchHoverTimeout);
+      touchHoverTimeout = window.setTimeout(() => setIsLogoHovered(false), LOGO_TOUCH_HOVER_MS);
+    };
+
+    window.addEventListener("pointermove", handlePointerMove);
+    window.addEventListener("pointerdown", handlePointerDown);
     window.addEventListener("mouseleave", handleMouseLeave);
 
     return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("pointermove", handlePointerMove);
+      window.removeEventListener("pointerdown", handlePointerDown);
       window.removeEventListener("mouseleave", handleMouseLeave);
+      window.clearTimeout(touchHoverTimeout);
     };
   }, [circleMetrics.cx, circleMetrics.cy, circleMetrics.radius, hasHydrated, showLogoCircle]);
 
@@ -158,8 +183,8 @@ export default function FactoryBackdrop({
       return [];
     }
 
-    return createPipePaths(cardAnchors, viewportSize, navHeight);
-  }, [cardAnchors, hasHydrated, navHeight, showFactoryEffects, viewportSize]);
+    return createPipePaths(cardAnchors, viewportSize, navBottom, circleMetrics.diameter * 0.7);
+  }, [cardAnchors, circleMetrics.diameter, hasHydrated, navBottom, showFactoryEffects, viewportSize]);
 
   return (
     <>

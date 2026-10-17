@@ -1,5 +1,5 @@
 import { useId } from "react";
-import type { AnchorPoint, CanvasSize, PipePath } from "./types";
+import type { AnchorPoint, CanvasSize, CardBox, PipePath } from "./types";
 
 type PipesProps = {
 	viewportSize: CanvasSize;
@@ -7,21 +7,38 @@ type PipesProps = {
 	pipeScale: number;
 };
 
-export function createPipePaths(cardAnchors: AnchorPoint[], viewportSize: CanvasSize, navHeight: number): PipePath[] {
+// navBottom: where pipes leave the navbar. navRowHeight: one nav row, the unit for the pipe curves.
+export function createPipePaths(cardAnchors: AnchorPoint[], viewportSize: CanvasSize, navBottom: number, navRowHeight: number): PipePath[] {
 	if (cardAnchors.length === 0) {
 		return [];
 	}
 
 	return cardAnchors.map((anchor, index) => {
 		const startX = viewportSize.width / 2;
-		const startY = navHeight;
-		const controlY = Math.max(startY + navHeight * 0.6, anchor.y - navHeight * 0.6);
+		const startY = navBottom;
+		const controlY = Math.max(startY + navRowHeight * 0.6, anchor.y - navRowHeight * 0.6);
 		const controlX = (startX + anchor.x) / 2;
-		const endY = anchor.y + navHeight * 0.1;
+		const endY = anchor.y + navRowHeight * 0.1;
 
 		return {
 			id: `pipe-${index}`,
 			d: `M ${startX} ${startY} Q ${controlX} ${controlY} ${anchor.x} ${endY}`,
+		};
+	});
+}
+
+// Zig-zag column: S-curves from the logo (top center) into the first card, then from each card's base into the next card's cap.
+export function createStackedPipePaths(cards: CardBox[], width: number): PipePath[] {
+	return cards.map((card, index) => {
+		const previous = cards[index - 1];
+		const startX = previous ? previous.cx : width / 2;
+		const startY = previous ? previous.bottom - previous.size * 0.06 : 0;
+		const endY = card.top + card.size * 0.04;
+		const bend = Math.max(40, (endY - startY) * 0.55);
+
+		return {
+			id: `pipe-${index}`,
+			d: `M ${startX} ${startY} C ${startX} ${startY + bend}, ${card.cx} ${endY - bend}, ${card.cx} ${endY}`,
 		};
 	});
 }

@@ -1,36 +1,56 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Reaction Lab Games
 
-## Getting Started
+The website is a Next.js static export hosted on Apache/cPanel. The exported site
+does not require a Node.js process on the production host. The PHP files under
+`public/api/` provide the leaderboard endpoints.
 
-First, run the development server:
+## Local development
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Run the source lint check with:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run lint
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Build and deploy
 
-## Learn More
+Build the site with:
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+npm ci
+npm run build
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+The build writes a deployable static site to `out/`. The post-build step removes
+unused Unity build versions and uncompressed copies from that export while
+leaving the source assets untouched.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Upload the **contents** of `out/` to the cPanel document root (commonly
+`public_html/`), including the hidden `.htaccess` file. Synchronize deletions
+when deploying so old Unity build files do not accumulate on the host. The
+export contains the site pages, precompressed Unity assets, and PHP endpoints.
 
-## Deploy on Vercel
+Apache must allow `.htaccess` overrides and provide `mod_rewrite` and
+`mod_headers`. The `.htaccess` file handles canonical routes, gzip delivery,
+Unity content types, and cache headers. Next.js response-header configuration
+does not control the static files served by cPanel.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+The leaderboard endpoints require PHP with PDO MySQL support. Configure the
+database constants and admin token in the server-side `config.php` expected by
+the PHP files; keep that file outside the document root and never upload its
+secrets as part of the static export. Confirm the configured path matches the
+cPanel account before deploying.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Unity WebGL builds
+
+The current browser game build version is set in
+`app/rapid-path/rapid-path-client.tsx`. Place that version's Unity WebGL output
+under `public/optimized_assets/game_assets/rapid-path/Build/RapidPath-<version>/`
+with its loader, `.data.gz`, `.framework.js.gz`, and `.wasm.gz` files in the
+`Build/` subdirectory. Build using Unity's gzip compression; cPanel serves the
+precompressed files with the required encoding and MIME headers. The export
+step fails if the active build is missing.

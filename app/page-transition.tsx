@@ -41,7 +41,6 @@ type TransitionLinkProps = Omit<React.ComponentProps<typeof Link>, "href"> & {
 };
 
 const COVER_DURATION_MS = 900;
-const REVEAL_DURATION_MS = 780;
 const ROUTE_SWITCH_COVERAGE = 0.9;
 const ROUTE_NAVIGATION_DELAY_MS = 900;
 const BUBBLE_SIZE_MULTIPLIER = 4;
@@ -238,13 +237,13 @@ export function PageTransitionProvider({ children, topOffset = "0px" }: PageTran
     const drawFrame = useCallback((timeMs: number) => {
         const ctx = ctxRef.current;
         const sprite = spriteRef.current;
-        if (!ctx || !sprite) return;
+        if (!ctx || !sprite) return false;
 
         const { width, height } = sizeRef.current;
         const coverage = coverageRef.current;
 
         ctx.clearRect(0, 0, width, height);
-        if (coverage <= 0.001) return;
+        if (coverage <= 0.001) return false;
 
         const previousFrameTime = lastFrameTimeRef.current ?? timeMs;
         const frameDeltaSeconds = Math.max(0, (timeMs - previousFrameTime) * 0.001);
@@ -328,12 +327,12 @@ export function PageTransitionProvider({ children, topOffset = "0px" }: PageTran
         }
 
         if (modeRef.current === "revealing" && !spawnEnabledRef.current && bubbles.length === 0) {
-            finalizeTransition();
-            return;
+            return true;
         }
 
         ctx.globalAlpha = 1;
-    }, [finalizeTransition]);
+        return false;
+    }, []);
 
     const stopAnimation = useCallback(() => {
         if (rafIdRef.current !== null) {
@@ -350,13 +349,17 @@ export function PageTransitionProvider({ children, topOffset = "0px" }: PageTran
                 rafIdRef.current = null;
                 return;
             }
-            drawFrame(timestamp);
+            if (drawFrame(timestamp)) {
+                rafIdRef.current = null;
+                finalizeTransition();
+                return;
+            }
 
             rafIdRef.current = window.requestAnimationFrame(tick);
         };
 
         rafIdRef.current = window.requestAnimationFrame(tick);
-    }, [drawFrame, stopAnimation]);
+    }, [drawFrame, finalizeTransition, stopAnimation]);
 
     const animateCoverage = useCallback(
         (from: number, to: number, durationMs: number, onComplete: () => void) => {
@@ -524,8 +527,11 @@ export function PageTransitionProvider({ children, topOffset = "0px" }: PageTran
         if (mode === "idle") return;
         if (pathname === pathAtStartRef.current) return;
 
-        routeReadyRef.current = true;
-        beginDrainIfReady();
+        const frame = window.requestAnimationFrame(() => {
+            routeReadyRef.current = true;
+            beginDrainIfReady();
+        });
+        return () => window.cancelAnimationFrame(frame);
     }, [pathname, beginDrainIfReady, mode]);
 
     const contextValue = useMemo<PageTransitionContextValue>(

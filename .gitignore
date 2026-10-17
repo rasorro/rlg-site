@@ -27,3 +27,7 @@ next-env.d.ts
 
 # local media backups
 public/original_assets/
+# uncompressed Unity build files (only needed by `npm run dev`; the site ships the .gz copies)
+public/optimized_assets/game_assets/*/Build/**/*.data
+public/optimized_assets/game_assets/*/Build/**/*.wasm
+public/optimized_assets/game_assets/*/Build/**/*.framework.js

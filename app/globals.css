@@ -1,5 +1,19 @@
 @import "tailwindcss";
 
+/* Keep in sync with HOME_STACKED_QUERY in app/home-layout.ts. */
+@custom-variant home-stacked (@media (max-aspect-ratio: 4/5));
+
+/* Two-row navbar wherever the one-row layout (title | flask | buttons) needs more than ~15 nav rows of width.
+   Row height is 10dvh, floored at 52px, so: aspect ratio under 3:2, or any width under 15 * 52px. */
+@custom-variant nav-stacked {
+  @media (max-aspect-ratio: 3/2) {
+    @slot;
+  }
+  @media (max-width: 779px) {
+    @slot;
+  }
+}
+
 @theme inline {
   --font-sans: var(--font-bagel-fat-one);
   --font-mono: var(--font-bagel-fat-one);
@@ -15,10 +29,86 @@
   --color-stickman: #00E6FF;
   --color-swerve: #FFF300;
   --rlg-page-pad-x: 3.75rem;
-  --rlg-nav-h: 10dvh;
+  --rlg-badge-size: clamp(3.5rem, 10vw, 7.5rem);
+}
+
+/* Navbar geometry. The flask straddles the bottom edge of the last nav row; factoryBackdrop measures it from the navbar's home link. */
+:root {
   --rlg-nav-pad-x: clamp(0.9rem, 3vw, 1.8rem);
   --rlg-nav-gap: clamp(0.5rem, 1.4vw, 0.9rem);
-  --rlg-badge-size: clamp(3.5rem, 10vw, 7.5rem);
+  --rlg-nav-row-h: clamp(52px, 10dvh, 120px);
+  --rlg-nav-title-h: 0px;
+  --rlg-nav-h: calc(var(--rlg-nav-title-h) + var(--rlg-nav-row-h));
+  --rlg-flask-d: calc(var(--rlg-nav-row-h) * 10 / 7);
+  --rlg-flask-top: calc(var(--rlg-nav-title-h) + var(--rlg-nav-row-h) / 15);
+}
+
+@variant nav-stacked {
+  :root {
+    --rlg-nav-row-h: clamp(56px, min(10dvh, 18vw), 110px);
+    /* Title panel spans the full width; "REACTION LAB GAMES" plus padding is ~13em wide. */
+    --rlg-nav-title-font: min(calc(var(--rlg-nav-row-h) * 0.45), calc((100vw - 2 * var(--rlg-nav-pad-x)) / 14.5));
+    --rlg-nav-title-h: calc(var(--rlg-nav-title-font) * 1.6 + 0.9rem);
+    /* ABOUT and CONTACT share the row with the flask; CONTACT is ~7em wide. */
+    --rlg-nav-button-font: min(calc(var(--rlg-nav-row-h) * 0.315), calc((100vw - 2 * var(--rlg-nav-pad-x) - var(--rlg-flask-d) - 1rem) / 14));
+  }
+}
+
+.rlg-nav-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--rlg-nav-gap);
+  height: 100%;
+  font-size: calc(var(--rlg-nav-row-h) * 0.45);
+}
+
+.rlg-nav-title {
+  translate: 0.5em 0;
+}
+
+.rlg-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--rlg-nav-gap);
+  margin-left: auto;
+  font-size: 0.7em;
+  translate: -0.5em 0;
+}
+
+@variant nav-stacked {
+  .rlg-nav-bar {
+    display: grid;
+    grid-template-columns: 1fr var(--rlg-flask-d) 1fr;
+    grid-template-rows: var(--rlg-nav-title-h) var(--rlg-nav-row-h);
+    grid-template-areas:
+      "title title title"
+      "about . contact";
+    column-gap: 0;
+  }
+
+  .rlg-nav-title {
+    grid-area: title;
+    translate: none;
+    font-size: var(--rlg-nav-title-font);
+  }
+
+  .rlg-nav-actions {
+    display: contents;
+  }
+
+  .rlg-nav-about,
+  .rlg-nav-contact {
+    justify-self: center;
+    font-size: var(--rlg-nav-button-font);
+  }
+
+  .rlg-nav-about {
+    grid-area: about;
+  }
+
+  .rlg-nav-contact {
+    grid-area: contact;
+  }
 }
 
 html,
@@ -86,7 +176,22 @@ body {
   background-position-y: 0px;
 }
 
-body.homepage-background {
+/* Home game cards: three across, centered vertically; zig-zag column on portrait screens. */
+.home-gamecards {
+  --rlg-gamecard-size: min(27.5vw, (100dvh - var(--rlg-nav-h)) * 0.75, 70rem);
+  --rlg-home-top-pad: calc((100dvh - var(--rlg-nav-h) - var(--rlg-gamecard-size)) / 2);
+}
+
+@variant home-stacked {
+  .home-gamecards {
+    --rlg-gamecard-size: min(64vw, 44dvh, 420px);
+    /* Clear the half of the flask that hangs below the navbar (~0.5 of a nav row). */
+    --rlg-home-top-pad: calc(var(--rlg-nav-row-h) * 0.5 + 3rem);
+  }
+}
+
+body.homepage-background,
+body:has(.home-gamecards) {
   background-image: url("/optimized_assets/global_assets/rlg_background.webp");
   background-repeat: repeat;
   background-size: clamp(120px, 20vw, 4000px);

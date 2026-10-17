@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev --webpack",
     "build": "next build",
-    "start": "next start",
+    "postbuild": "node scripts/prune-static-export.mjs",
     "lint": "eslint",
     "images:optimize": "node scripts/optimize-images.mjs",
     "images:optimize:clean": "node scripts/optimize-images.mjs --clean=true",

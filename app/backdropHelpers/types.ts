@@ -19,6 +19,13 @@ export type AnchorPoint = {
   y: number;
 };
 
+export type CardBox = {
+  cx: number;
+  top: number;
+  bottom: number;
+  size: number;
+};
+
 export type CircleMetrics = {
   diameter: number;
   radius: number;

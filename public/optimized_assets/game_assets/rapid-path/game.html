@@ -3,6 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content">
     <title>Unity Web Player | Project_Vagabond</title>
     <style>
       html, body {
@@ -13,6 +14,12 @@
         overflow: hidden;
         background-color: #3D3047;
         cursor: url("/optimized_assets/global_assets/rlg_cursor.png") 0 0, auto;
+      }
+      html.mobile, body.mobile {
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        overscroll-behavior: none;
       }
       body {
         position: relative;
@@ -27,17 +34,70 @@
         /* Customize what is visible while Unity is not actively rendering. */
         background-color: #3D3047;
       }
+      #unity-error {
+        display: none;
+        position: fixed;
+        inset: auto 1rem 1rem;
+        z-index: 3;
+        padding: 1rem;
+        color: #fff;
+        background: #8b0000;
+        font: 16px sans-serif;
+      }
+      #unity-loading {
+        position: fixed;
+        inset: 0;
+        z-index: 2;
+        display: grid;
+        align-content: center;
+        justify-items: center;
+        gap: 1.25rem;
+        color: #00ff75;
+        background: #3D3047;
+        font: 700 1rem sans-serif;
+      }
+      #unity-loading img {
+        width: min(8rem, 30vw);
+        height: auto;
+      }
+      #unity-progress {
+        width: min(15rem, 70vw);
+        height: 0.75rem;
+        overflow: hidden;
+        border: 2px solid #111;
+        border-radius: 9999px;
+        background: #252433;
+      }
+      #unity-progress-bar {
+        width: 0;
+        height: 100%;
+        background: #00ff75;
+        transition: width 150ms linear;
+      }
+      canvas.mobile {
+        height: 100vh !important;
+        height: 100dvh !important;
+        touch-action: none;
+      }
     </style>
   </head>
   <body>
     <canvas id="unity-canvas" tabindex="0"></canvas>
+    <div id="unity-loading" role="status" aria-live="polite">
+      <img src="/optimized_assets/global_assets/rlg_logo_256.webp" alt="Reaction Lab Games">
+      <span>Loading Rapid Path...</span>
+      <div id="unity-progress" aria-hidden="true"><div id="unity-progress-bar"></div></div>
+    </div>
+    <div id="unity-error" role="alert" aria-live="assertive"></div>
     <script>
       var canvas = document.querySelector("#unity-canvas");
       var resizeFocusTimer = null;
-      var buildVersion = new URLSearchParams(window.location.search).get("v") || "dev";
+      var buildVersion = new URLSearchParams(window.location.search).get("v") || "1.0.3";
+      var buildDirectory = new URLSearchParams(window.location.search).get("build") || "Build/RapidPath-1.0.3/Build";
+      var buildFileName = new URLSearchParams(window.location.search).get("file") || "RapidPath-1.0.3";
 
       function versionedBuildUrl(filename) {
-        return "Build/" + filename + "?v=" + encodeURIComponent(buildVersion);
+        return buildDirectory + "/" + filename + "?v=" + encodeURIComponent(buildVersion);
       }
 
       function focusGameCanvas() {
@@ -47,6 +107,10 @@
         } catch (e) {
           canvas.focus();
         }
+      }
+
+      function reportGameError() {
+        window.parent.postMessage({ type: "RLG_GAME_ERROR" }, window.location.origin);
       }
 
       window.addEventListener("message", function (event) {
@@ -77,44 +141,53 @@
         }
       });
 
-      if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-        // Mobile device style: fill the whole browser client area with the game canvas:
-        var meta = document.createElement('meta');
-        meta.name = 'viewport';
-        meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
-        document.getElementsByTagName('head')[0].appendChild(meta);
-
+      var isTouchDevice = matchMedia("(pointer: coarse)").matches || navigator.maxTouchPoints > 0;
+      if (isTouchDevice) {
+        document.documentElement.classList.add("mobile");
+        document.body.classList.add("mobile");
+        canvas.classList.add("mobile");
         canvas.style.width = "100%";
         canvas.style.height = "100%";
         canvas.style.position = "fixed";
-
         document.body.style.textAlign = "left";
-
       }
 
       var loaderScript = document.createElement("script");
-      loaderScript.src = versionedBuildUrl("Unity Builds.loader.js");
+      loaderScript.src = versionedBuildUrl(buildFileName + ".loader.js");
       loaderScript.onload = function () {
         createUnityInstance(canvas, {
           arguments: [],
-          dataUrl: versionedBuildUrl("Unity Builds.data"),
-          frameworkUrl: versionedBuildUrl("Unity Builds.framework.js"),
-          codeUrl: versionedBuildUrl("Unity Builds.wasm"),
+          dataUrl: versionedBuildUrl(buildFileName + ".data"),
+          frameworkUrl: versionedBuildUrl(buildFileName + ".framework.js"),
+          codeUrl: versionedBuildUrl(buildFileName + ".wasm"),
           streamingAssetsUrl: "StreamingAssets",
           companyName: "Reaction Lab LLC",
           productName: "Project_Vagabond",
           productVersion: buildVersion,
           // matchWebGLToCanvasSize: false, // Uncomment this to separately control WebGL canvas render size and DOM element size.
           // devicePixelRatio: 1, // Uncomment this to override low DPI rendering on high DPI displays.
+        }, function (progress) {
+          document.querySelector("#unity-progress-bar").style.width = Math.round(progress * 100) + "%";
         }).then(function () {
+          document.querySelector("#unity-loading").style.display = "none";
           window.parent.postMessage({ type: "RLG_GAME_READY" }, window.location.origin);
           focusGameCanvas();
-        }).catch(function (message) {
-          alert(message);
+        }).catch(function (error) {
+          console.error("Rapid-Path failed to start:", error);
+          document.querySelector("#unity-loading").style.display = "none";
+          var errorMessage = document.querySelector("#unity-error");
+          errorMessage.textContent = "The game could not be loaded. Please refresh the page and try again.";
+          errorMessage.style.display = "block";
+          reportGameError();
         });
       };
       loaderScript.onerror = function () {
         console.error("Unable to load Unity loader for build " + buildVersion);
+        document.querySelector("#unity-loading").style.display = "none";
+        var errorMessage = document.querySelector("#unity-error");
+        errorMessage.textContent = "The game could not be loaded. Please refresh the page and try again.";
+        errorMessage.style.display = "block";
+        reportGameError();
       };
       document.body.appendChild(loaderScript);
     </script>

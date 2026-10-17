@@ -21,11 +21,12 @@ function Logo({ circleMetrics, bubbles, isHovered }: LogoProps) {
 		return { size, x, y };
 	}, [circleMetrics.diameter]);
 
+	// Positioned by the same CSS variables as the navbar's home link, so it lines up before any measurement; the SVG scales to fit.
 	return (
 		<div
 			aria-hidden
 			className="pointer-events-none absolute left-1/2 z-[50] -translate-x-1/2 overflow-visible"
-			style={{ top: `${circleMetrics.top}px`, width: `${circleMetrics.diameter}px`, height: `${circleMetrics.diameter}px` }}
+			style={{ top: "var(--rlg-flask-top)", width: "var(--rlg-flask-d)", height: "var(--rlg-flask-d)" }}
 		>
 			<svg className="absolute inset-0 h-full w-full overflow-visible" viewBox={`0 0 ${circleMetrics.diameter} ${circleMetrics.diameter}`} role="presentation">
 				<defs>

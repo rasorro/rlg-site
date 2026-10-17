@@ -12,8 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
-    // Ignore generated Unity build output.
-    "public/Build/**",
+    // Ignore source media and generated Unity build output.
+    "public/original_assets/**",
+    "public/optimized_assets/**",
   ]),
 ]);
 
