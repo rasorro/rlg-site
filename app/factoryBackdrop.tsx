@@ -5,7 +5,7 @@ import { createCircleBubbles } from "./backdropHelpers/bubbles";
 import Logo from "./backdropHelpers/logo";
 import Pipes, { createPipePaths } from "./backdropHelpers/pipes";
 import type { AnchorPoint, CanvasSize, CircleMetrics } from "./backdropHelpers/types";
-import { HOME_STACKED_QUERY } from "./home-layout";
+import { isHomeStacked } from "./home-layout";
 
 type FactoryBackdropProps = {
   showFactoryEffects?: boolean;
@@ -69,7 +69,7 @@ function useOverlayGeometry(showFactoryEffects: boolean): {
       }
 
       // Stacked (portrait) home layout scrolls, so the home page draws its own pipes inside the scrolling content.
-      if (!showFactoryEffects || window.matchMedia(HOME_STACKED_QUERY).matches) {
+      if (!showFactoryEffects || isHomeStacked()) {
         setCardAnchors([]);
         return;
       }

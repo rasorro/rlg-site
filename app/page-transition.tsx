@@ -422,11 +422,9 @@ export function PageTransitionProvider({ children, topOffset = "0px" }: PageTran
         const height = Math.max(1, Math.floor(rect.height));
         const dpr = Math.min(window.devicePixelRatio || 1, MAX_CANVAS_DPR);
 
+        // CSS size comes from the h-full/w-full classes, so the canvas never outgrows the screen mid-rotation.
         canvas.width = Math.floor(width * dpr);
         canvas.height = Math.floor(height * dpr);
-
-        canvas.style.width = `${width}px`;
-        canvas.style.height = `${height}px`;
 
         const ctx = canvas.getContext("2d", { alpha: true });
         if (!ctx) return;
@@ -591,7 +589,7 @@ export function PageTransitionProvider({ children, topOffset = "0px" }: PageTran
             <div
                 ref={overlayRef}
                 aria-hidden="true"
-                className={`pointer-events-none fixed inset-x-0 bottom-0 z-40 ${mode === "idle" ? "opacity-0" : "opacity-100"}`}
+                className={`pointer-events-none fixed inset-x-0 bottom-0 z-40 overflow-hidden ${mode === "idle" ? "opacity-0" : "opacity-100"}`}
                 style={{ top: topOffset }}
             >
                 <canvas ref={canvasRef} className="h-full w-full" />

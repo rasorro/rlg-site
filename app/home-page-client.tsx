@@ -4,7 +4,7 @@ import Image from "next/image";
 import { memo, useEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode, type RefObject } from "react";
 import Pipes, { createStackedPipePaths } from "./backdropHelpers/pipes";
 import type { CanvasSize, PipePath } from "./backdropHelpers/types";
-import { HOME_STACKED_QUERY } from "./home-layout";
+import { isHomeStacked, LAYOUT_FLAGS_EVENT } from "./home-layout";
 import { useHasFinePointer } from "./input-capabilities";
 import { TransitionLink } from "./page-transition";
 import { useTouchPress } from "./touch-press";
@@ -100,11 +100,10 @@ const GameCardTile = memo(function GameCardTile({ game, index, prefersReducedMot
 function useIsHomeStacked() {
   return useSyncExternalStore(
     (onChange) => {
-      const mediaQuery = window.matchMedia(HOME_STACKED_QUERY);
-      mediaQuery.addEventListener("change", onChange);
-      return () => mediaQuery.removeEventListener("change", onChange);
+      window.addEventListener(LAYOUT_FLAGS_EVENT, onChange);
+      return () => window.removeEventListener(LAYOUT_FLAGS_EVENT, onChange);
     },
-    () => window.matchMedia(HOME_STACKED_QUERY).matches,
+    isHomeStacked,
     () => false,
   );
 }

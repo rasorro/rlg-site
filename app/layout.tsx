@@ -3,6 +3,7 @@ import { Coiny } from "next/font/google";
 import "./globals.css";
 import AppShell from "./app-shell";
 import { UiProvider } from "./ui-context";
+import { LAYOUT_FLAGS_SCRIPT } from "./home-layout";
 
 const universalFont = Coiny({
   weight: "400",
@@ -53,9 +54,14 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${universalFont.variable} h-full antialiased bg-brand-background overflow-hidden`}
+      className={`${universalFont.variable} antialiased bg-brand-background`}
+      // LAYOUT_FLAGS_SCRIPT adds layout attributes before hydration.
+      suppressHydrationWarning
     >
-      <body className="h-full overflow-hidden font-sans -z-30">
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: LAYOUT_FLAGS_SCRIPT }} />
+      </head>
+      <body className="min-h-dvh overflow-x-clip font-sans -z-30">
         <UiProvider>
           <AppShell>{children}</AppShell>
         </UiProvider>

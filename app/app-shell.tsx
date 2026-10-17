@@ -26,7 +26,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
     return (
         <PageTransitionProvider topOffset={showUiPanels ? "var(--rlg-nav-h)" : "0px"}>
-            <div className="hide-scrollbar relative flex h-full flex-col overflow-y-auto overflow-x-hidden">
+            <div className="relative flex min-h-dvh flex-col">
                 <FactoryBackdrop showFactoryEffects={showFactoryEffects} showLogoCircle={showLogoCircle} />
                 <Navbar />
                 {children}
