@@ -92,9 +92,9 @@
     <script>
       var canvas = document.querySelector("#unity-canvas");
       var resizeFocusTimer = null;
-      var buildVersion = new URLSearchParams(window.location.search).get("v") || "1.0.3";
-      var buildDirectory = new URLSearchParams(window.location.search).get("build") || "Build/RapidPath-1.0.3/Build";
-      var buildFileName = new URLSearchParams(window.location.search).get("file") || "RapidPath-1.0.3";
+      var buildVersion = new URLSearchParams(window.location.search).get("v") || "1.0.4";
+      var buildDirectory = new URLSearchParams(window.location.search).get("build") || "Build/RapidPath-1.0.4/Build";
+      var buildFileName = new URLSearchParams(window.location.search).get("file") || "RapidPath-1.0.4";
 
       function versionedBuildUrl(filename) {
         return buildDirectory + "/" + filename + "?v=" + encodeURIComponent(buildVersion);
