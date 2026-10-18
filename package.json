@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --webpack",
+    "prebuild": "node scripts/precompress-brotli.mjs",
     "build": "next build",
     "postbuild": "node scripts/prune-static-export.mjs",
     "lint": "eslint",

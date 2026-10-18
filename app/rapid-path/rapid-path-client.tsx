@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import GameInfoPanel, { type InfoSection } from "../game-info-panel";
 import { useHasFinePointer } from "../input-capabilities";
 import { usePageTransition } from "../page-transition";
@@ -9,7 +9,7 @@ import { useTouchPress } from "../touch-press";
 import { useUi } from "../ui-context";
 import DesktopOnlyPanel from "./desktop-only-panel";
 
-const RAPID_PATH_BUILD_VERSION = "1.0.3";
+const RAPID_PATH_BUILD_VERSION = "1.0.4";
 
 // Keyboard devices get the WASD/arrows diagram; touch-only devices (after opting in) get swipe instructions instead.
 const KEYBOARD_CONTROLS: InfoSection = { title: "Controls", text: "" };
@@ -38,6 +38,23 @@ const OTHER_INFO_SECTIONS: InfoSection[] = [
     },
 ];
 
+const PORTRAIT_QUERY = "(orientation: portrait)";
+
+function subscribeToOrientation(onChange: () => void) {
+    const mediaQuery = window.matchMedia(PORTRAIT_QUERY);
+    mediaQuery.addEventListener("change", onChange);
+    return () => mediaQuery.removeEventListener("change", onChange);
+}
+
+// Defaults to portrait before hydration; only consulted once the game reports its D-pad is on.
+function useIsPortrait(): boolean {
+    return useSyncExternalStore(
+        subscribeToOrientation,
+        () => window.matchMedia(PORTRAIT_QUERY).matches,
+        () => true,
+    );
+}
+
 export default function RapidPathClientPage() {
     const { showUiPanels, setShowUiPanels } = useUi();
     const { isTransitioning } = usePageTransition();
@@ -47,6 +64,9 @@ export default function RapidPathClientPage() {
     const [isGameReady, setIsGameReady] = useState(false);
     const [gameLoadError, setGameLoadError] = useState(false);
     const [loadAnyway, setLoadAnyway] = useState(false);
+    // Long side : short side the game asks for while its on-screen D-pad is shown; null when it's off.
+    const [dPadAspect, setDPadAspect] = useState<number | null>(null);
+    const isPortrait = useIsPortrait();
 
     // Touch-only devices see the desktop panel instead of the game until they opt in; null means not yet hydrated.
     const hasFinePointer = useHasFinePointer();
@@ -56,14 +76,44 @@ export default function RapidPathClientPage() {
     const showControls = showUiPanels && canLoadGame;
     const isTouchOnly = hasFinePointer === false;
     const infoSections = [isTouchOnly ? TOUCH_CONTROLS : KEYBOARD_CONTROLS, ...OTHER_INFO_SECTIONS];
-    const focusModeSize = isFullscreen ? "min(90dvw, 90dvh)" : "min(100dvw, 100dvh)";
+    // Desktop fullscreen keeps a margin around the board; touch devices use the whole screen.
+    const fullscreenMargin = isFullscreen && !isTouchOnly;
+    const focusModeSize = fullscreenMargin ? "min(90dvw, 90dvh)" : "min(100dvw, 100dvh)";
 
     // Top padding clears the half of the flask hanging below the navbar; the board fills what's left of the viewport.
+    // Touch landscape is too short for that, so the game takes the full screen height and the header scrolls away above it.
     const boardTopPad = "calc(var(--rlg-nav-row-h) * 0.5 + 2rem)";
-    const boardSize = showUiPanels
-        ? `min(calc(90dvw - 2rem), calc(100dvh - var(--rlg-nav-h) - ${boardTopPad} - 1.5rem), 760px)`
-        : focusModeSize;
-    const pageHeightClass = showUiPanels ? "min-h-[calc(100dvh-var(--rlg-nav-h))]" : "min-h-dvh";
+    const isTouchLandscape = isTouchOnly && !isPortrait;
+    const availableWidth = showUiPanels ? "calc(90dvw - 2rem)" : fullscreenMargin ? "90dvw" : "100dvw";
+    const availableHeight = showUiPanels
+        ? isTouchLandscape ? "calc(100dvh - 1rem)" : `calc(100dvh - var(--rlg-nav-h) - ${boardTopPad} - 1.5rem)`
+        : fullscreenMargin ? "90dvh" : "100dvh";
+    const boardCap = showUiPanels ? ", 760px" : "";
+
+    // With the D-pad on, the game area grows along the long axis: pad beneath the board in portrait
+    // (like a Game Boy), beside it in landscape. The game lays itself out inside whatever shape it gets.
+    let boardSize: string;
+    let gameWidth: string;
+    let gameHeight: string;
+    if (dPadAspect === null) {
+        boardSize = showUiPanels ? `min(${availableWidth}, ${availableHeight}${boardCap})` : focusModeSize;
+        gameWidth = boardSize;
+        gameHeight = boardSize;
+    } else if (isPortrait) {
+        boardSize = `min(${availableWidth}, calc(${availableHeight} / ${dPadAspect})${boardCap})`;
+        gameWidth = boardSize;
+        gameHeight = `calc(${boardSize} * ${dPadAspect})`;
+    } else {
+        boardSize = `min(${availableHeight}, calc(${availableWidth} / ${dPadAspect})${boardCap})`;
+        gameWidth = `calc(${boardSize} * ${dPadAspect})`;
+        gameHeight = boardSize;
+    }
+    // iPhone has no fullscreen API for pages, but Safari collapses its bars when the page scrolls. Touch landscape focus mode
+    // (where the bars cost the board height) adds scroll room above the board and pins the board to the bottom, so scrolling
+    // down hides the bars and ends with the board filling the screen. Portrait has height to spare and stays centered.
+    const focusPageHeightClass = isTouchLandscape ? "min-h-[calc(100lvh+3rem)]" : "min-h-dvh";
+    const focusContentClass = isTouchLandscape ? "mt-auto" : "my-auto";
+    const pageHeightClass = showUiPanels ? "min-h-[calc(100dvh-var(--rlg-nav-h))]" : focusPageHeightClass;
     const boardToggleSize = `clamp(1rem, calc(${boardSize} * 0.0425), 3rem)`;
     const boardToggleInset = `clamp(0.35rem, calc(${boardSize} * 0.013), 0.9rem)`;
 
@@ -90,6 +140,9 @@ export default function RapidPathClientPage() {
                 setGameLoadError(false);
             } else if (event.data?.type === "RLG_GAME_ERROR") {
                 setGameLoadError(true);
+            } else if (event.data?.type === "RLG_DPAD_CHANGED") {
+                const aspect = Number(event.data.aspect);
+                setDPadAspect(event.data.enabled && aspect >= 1 ? aspect : null);
             }
         };
 
@@ -145,10 +198,54 @@ export default function RapidPathClientPage() {
         return () => window.clearTimeout(timeoutId);
     }, [showUiPanels, requestGameFocus]);
 
+    // Focus mode also asks for real browser fullscreen, hiding the tab strip and URL bar where the browser allows it
+    // (not on iPhone Safari, which only fullscreens video). Leaving fullscreen any other way (Esc, back gesture) exits focus mode too.
+    const enteredFullscreenRef = useRef(false);
+
+    const toggleFocusMode = () => {
+        const root = document.documentElement as HTMLElement & { webkitRequestFullscreen?: () => void };
+        const doc = document as Document & { webkitFullscreenElement?: Element | null; webkitExitFullscreen?: () => void };
+        const enteringFocus = showUiPanels;
+        setShowUiPanels(!enteringFocus);
+        // Start at the top so there's room to scroll down to the board, which is what collapses the browser bars
+        if (enteringFocus && isTouchLandscape) window.scrollTo(0, 0);
+
+        if (enteringFocus) {
+            if (root.requestFullscreen) {
+                root.requestFullscreen({ navigationUI: "hide" })
+                    .then(() => { enteredFullscreenRef.current = true; })
+                    .catch(() => {});
+            } else if (root.webkitRequestFullscreen) {
+                root.webkitRequestFullscreen();
+                enteredFullscreenRef.current = true;
+            }
+        } else if (enteredFullscreenRef.current) {
+            enteredFullscreenRef.current = false;
+            if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+            else if (doc.webkitFullscreenElement) doc.webkitExitFullscreen?.();
+        }
+    };
+
+    useEffect(() => {
+        const handleFullscreenExit = () => {
+            const doc = document as Document & { webkitFullscreenElement?: Element | null };
+            if (!enteredFullscreenRef.current || document.fullscreenElement || doc.webkitFullscreenElement) return;
+            enteredFullscreenRef.current = false;
+            setShowUiPanels(true);
+        };
+
+        document.addEventListener("fullscreenchange", handleFullscreenExit);
+        document.addEventListener("webkitfullscreenchange", handleFullscreenExit);
+        return () => {
+            document.removeEventListener("fullscreenchange", handleFullscreenExit);
+            document.removeEventListener("webkitfullscreenchange", handleFullscreenExit);
+        };
+    }, [setShowUiPanels]);
+
     return (
         <main className={`relative flex flex-col ${pageHeightClass} w-full items-center overflow-y-auto bg-brand-background-dark`}>
             <div
-                className={showUiPanels ? "flex flex-col items-center gap-8 pb-0" : "flex flex-col items-center gap-0 my-auto"}
+                className={showUiPanels ? "flex flex-col items-center gap-8 pb-0" : `flex flex-col items-center gap-0 ${focusContentClass}`}
                 style={showUiPanels ? { paddingTop: boardTopPad } : undefined}
             >
                 <div className={showUiPanels ? "relative flex flex-col items-center gap-4 xl:flex-row xl:gap-6" : "relative flex flex-col items-center gap-0"}>
@@ -158,8 +255,8 @@ export default function RapidPathClientPage() {
 
                     <div className={showUiPanels ? "relative" : "relative"}>
                         <div
-                            className="aspect-square box-border shrink-0 overflow-hidden ring ring-inset ring-black bg-brand-background"
-                            style={{ width: boardSize }}
+                            className="box-border shrink-0 overflow-hidden ring ring-inset ring-black bg-brand-background"
+                            style={{ width: gameWidth, height: gameHeight }}
                         >
                             <>
                                 {showDesktopOnlyPanel && <DesktopOnlyPanel boardSize={boardSize} onLoadAnyway={() => setLoadAnyway(true)} />}
@@ -210,7 +307,7 @@ export default function RapidPathClientPage() {
                             type="button"
                             className="absolute z-10 inline-flex items-center justify-center rounded-lg border-2 border-black bg-brand-accent text-brand-text backdrop-blur transition hover:bg-brand-glow active:bg-brand-glow data-[pressed=true]:bg-brand-glow"
                             style={{ width: boardToggleSize, height: boardToggleSize, right: boardToggleInset, bottom: boardToggleInset }}
-                            onClick={() => setShowUiPanels(!showUiPanels)}
+                            onClick={toggleFocusMode}
                             {...touchPressProps("focus")}
                             aria-label={showUiPanels ? "Enter focus mode" : "Exit focus mode"}
                             title={showUiPanels ? "Enter focus mode" : "Exit focus mode"}
@@ -244,7 +341,7 @@ export default function RapidPathClientPage() {
                     {showControls && (
                         <GameInfoPanel
                             sections={infoSections}
-                            height={boardSize}
+                            height={gameHeight}
                             showControlsDiagram={!isTouchOnly}
                             compact
                             fitContent

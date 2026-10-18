@@ -35,7 +35,7 @@ when deploying so old Unity build files do not accumulate on the host. The
 export contains the site pages, precompressed Unity assets, and PHP endpoints.
 
 Apache must allow `.htaccess` overrides and provide `mod_rewrite` and
-`mod_headers`. The `.htaccess` file handles canonical routes, gzip delivery,
+`mod_headers`. The `.htaccess` file handles canonical routes, Brotli and gzip delivery,
 Unity content types, and cache headers. Next.js response-header configuration
 does not control the static files served by cPanel.
 
@@ -54,3 +54,9 @@ with its loader, `.data.gz`, `.framework.js.gz`, and `.wasm.gz` files in the
 `Build/` subdirectory. Build using Unity's gzip compression; cPanel serves the
 precompressed files with the required encoding and MIME headers. The export
 step fails if the active build is missing.
+
+The pre-build step (`scripts/precompress-brotli.mjs`) writes a `.br` copy next to
+each `.gz` artifact of the active build, which Apache serves to browsers that
+accept Brotli; others still get the `.gz` files. Max-quality Brotli takes about a
+minute and a half, so it only reruns when a `.gz` file is newer than its `.br`
+(pass `--force` to rebuild them anyway).
