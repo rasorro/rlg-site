@@ -278,7 +278,7 @@ export default function RapidPathClientPage() {
                                     ? `/optimized_assets/game_assets/rapid-path/game.html?v=${RAPID_PATH_BUILD_VERSION}&build=Build/RapidPath-${RAPID_PATH_BUILD_VERSION}/Build&file=RapidPath-${RAPID_PATH_BUILD_VERSION}`
                                     : "about:blank"}
                                 title="Reaction Lab Unity WebGL"
-                                className="h-full w-full border-0"
+                                className="h-full w-full border-0 focus:outline-none"
                                 allow="fullscreen; autoplay; gamepad"
                                 loading="eager"
                                 onLoad={() => {
