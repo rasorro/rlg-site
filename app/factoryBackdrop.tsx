@@ -5,7 +5,7 @@ import { createCircleBubbles } from "./backdropHelpers/bubbles";
 import Logo from "./backdropHelpers/logo";
 import Pipes, { createPipePaths } from "./backdropHelpers/pipes";
 import type { AnchorPoint, CanvasSize, CircleMetrics } from "./backdropHelpers/types";
-import { isHomeStacked } from "./home-layout";
+import { isHomeStacked, LAYOUT_FLAGS_EVENT } from "./home-layout";
 
 type FactoryBackdropProps = {
   showFactoryEffects?: boolean;
@@ -42,7 +42,7 @@ function useHydratedFlag(): boolean {
   );
 }
 
-function useOverlayGeometry(showFactoryEffects: boolean): {
+function useOverlayGeometry(showFactoryEffects: boolean, showLogoCircle: boolean): {
   viewportSize: CanvasSize;
   circleMetrics: CircleMetrics;
   navBottom: number;
@@ -54,27 +54,36 @@ function useOverlayGeometry(showFactoryEffects: boolean): {
   const [cardAnchors, setCardAnchors] = useState<AnchorPoint[]>([]);
 
   useEffect(() => {
+    // Focus mode has no backdrop to measure or animate.
+    if (!showFactoryEffects && !showLogoCircle) return;
+
+    const flaskAnchor = document.querySelector<HTMLElement>("[data-rlg-flask='true']");
+    const nav = document.querySelector<HTMLElement>("nav");
+    const home = showFactoryEffects ? document.querySelector<HTMLElement>(".home-gamecards") : null;
+    const cardNodes = home ? Array.from(home.querySelectorAll<HTMLElement>("[data-gamecard='true']")) : [];
+
     const updateOverlayGeometry = () => {
+      frame = 0;
       const nextViewport = { width: window.innerWidth, height: window.innerHeight };
-      setViewportSize(nextViewport);
+      setViewportSize(previous => previous.width === nextViewport.width && previous.height === nextViewport.height
+        ? previous : nextViewport);
 
       // The navbar's home link is the flask's footprint; it is absent when the navbar is hidden (Rapid Path focus mode).
-      const flaskAnchor = document.querySelector<HTMLElement>("[data-rlg-flask='true']");
       if (flaskAnchor) {
-        setCircleMetrics(circleMetricsFromRect(flaskAnchor.getBoundingClientRect()));
+        const next = circleMetricsFromRect(flaskAnchor.getBoundingClientRect());
+        setCircleMetrics(previous => previous.diameter === next.diameter && previous.cx === next.cx && previous.cy === next.cy
+          ? previous : next);
       }
-      const nav = document.querySelector<HTMLElement>("nav");
       if (nav) {
         setNavBottom(nav.getBoundingClientRect().bottom);
       }
 
       // Stacked (portrait) home layout scrolls, so the home page draws its own pipes inside the scrolling content.
       if (!showFactoryEffects || isHomeStacked()) {
-        setCardAnchors([]);
+        setCardAnchors(previous => previous.length === 0 ? previous : []);
         return;
       }
 
-      const cardNodes = Array.from(document.querySelectorAll<HTMLElement>("[data-gamecard='true']"));
       const nextAnchors = cardNodes.map((card) => {
         const rect = card.getBoundingClientRect();
         return {
@@ -83,28 +92,34 @@ function useOverlayGeometry(showFactoryEffects: boolean): {
         };
       });
 
-      setCardAnchors(nextAnchors);
+      setCardAnchors(previous => previous.length === nextAnchors.length && previous.every((anchor, index) =>
+        anchor.x === nextAnchors[index].x && anchor.y === nextAnchors[index].y) ? previous : nextAnchors);
     };
 
     let frame = 0;
 
     const scheduleUpdate = () => {
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(updateOverlayGeometry);
+      if (!frame) frame = requestAnimationFrame(updateOverlayGeometry);
     };
 
     scheduleUpdate();
     window.addEventListener("resize", scheduleUpdate);
+    window.addEventListener(LAYOUT_FLAGS_EVENT, scheduleUpdate);
 
-    const observer = new MutationObserver(scheduleUpdate);
-    observer.observe(document.body, { subtree: true, childList: true, attributes: true });
+    // Observe layout inputs, never the SVG output. A body-wide mutation observer
+    // feeds our own SVG updates back into another measurement/render cycle.
+    const observer = new ResizeObserver(scheduleUpdate);
+    for (const element of [nav, flaskAnchor, home, ...cardNodes]) {
+      if (element) observer.observe(element);
+    }
 
     return () => {
       window.removeEventListener("resize", scheduleUpdate);
+      window.removeEventListener(LAYOUT_FLAGS_EVENT, scheduleUpdate);
       observer.disconnect();
       cancelAnimationFrame(frame);
     };
-  }, [showFactoryEffects]);
+  }, [showFactoryEffects, showLogoCircle]);
 
   return { viewportSize, circleMetrics, navBottom, cardAnchors };
 }
@@ -114,7 +129,7 @@ export default function FactoryBackdrop({
   showLogoCircle = true,
 }: FactoryBackdropProps) {
   const hasHydrated = useHydratedFlag();
-  const { viewportSize, circleMetrics, navBottom, cardAnchors } = useOverlayGeometry(showFactoryEffects);
+  const { viewportSize, circleMetrics, navBottom, cardAnchors } = useOverlayGeometry(showFactoryEffects, showLogoCircle);
   const [isLogoHovered, setIsLogoHovered] = useState(false);
   const pipeScale = circleMetrics.diameter / PIPE_BASE_FLASK_DIAMETER;
 

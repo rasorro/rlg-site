@@ -60,3 +60,7 @@ each `.gz` artifact of the active build, which Apache serves to browsers that
 accept Brotli; others still get the `.gz` files. Max-quality Brotli takes about a
 minute and a half, so it only reruns when a `.gz` file is newer than its `.br`
 (pass `--force` to rebuild them anyway).
+
+See [the performance review](docs/performance-review.md) for the rendering
+budget, architecture findings, browser verification checklist, and remaining
+Unity profiling targets.

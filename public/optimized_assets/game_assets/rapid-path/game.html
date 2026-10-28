@@ -95,6 +95,19 @@
     <script>
       var canvas = document.querySelector("#unity-canvas");
       var resizeFocusTimer = null;
+      var unityInstance = null;
+      // Keep Retina sharpness without rendering 9–16 pixels per CSS pixel on
+      // high-density devices. Standard and 2x displays retain native resolution.
+      function gamePixelRatio() {
+        return Math.min(window.devicePixelRatio || 1, 2);
+      }
+      function watchGamePixelRatio() {
+        unityInstance.Module.devicePixelRatio = gamePixelRatio();
+        // Moving between monitors or zooming can change DPI without resizing
+        // the iframe. Re-arm against the new ratio after each change.
+        matchMedia("(resolution: " + window.devicePixelRatio + "dppx)")
+          .addEventListener("change", watchGamePixelRatio, { once: true });
+      }
       var buildVersion = new URLSearchParams(window.location.search).get("v") || "1.0.4";
       var buildDirectory = new URLSearchParams(window.location.search).get("build") || "Build/RapidPath-1.0.4/Build";
       var buildFileName = new URLSearchParams(window.location.search).get("file") || "RapidPath-1.0.4";
@@ -123,6 +136,8 @@
 
         if (event.data && event.data.type === "RLG_FOCUS_GAME") {
           focusGameCanvas();
+        } else if (event.source === window.parent && event.data && event.data.type === "RLG_VIEWPORT_CHANGED") {
+          if (unityInstance) unityInstance.Module.devicePixelRatio = gamePixelRatio();
         }
       });
 
@@ -132,6 +147,8 @@
 
       // Some browsers briefly drop focus during resize/orientation changes.
       window.addEventListener("resize", function () {
+        // Unity reads this setting when matching its render target to the canvas.
+        if (unityInstance) unityInstance.Module.devicePixelRatio = gamePixelRatio();
         if (resizeFocusTimer) {
           clearTimeout(resizeFocusTimer);
         }
@@ -167,11 +184,12 @@
           companyName: "Reaction Lab LLC",
           productName: "Project_Vagabond",
           productVersion: buildVersion,
-          // matchWebGLToCanvasSize: false, // Uncomment this to separately control WebGL canvas render size and DOM element size.
-          // devicePixelRatio: 1, // Uncomment this to override low DPI rendering on high DPI displays.
+          devicePixelRatio: gamePixelRatio(),
         }, function (progress) {
           document.querySelector("#unity-progress-bar").style.width = Math.round(progress * 100) + "%";
-        }).then(function () {
+        }).then(function (instance) {
+          unityInstance = instance;
+          watchGamePixelRatio();
           document.querySelector("#unity-loading").style.display = "none";
           window.parent.postMessage({ type: "RLG_GAME_READY" }, window.location.origin);
           focusGameCanvas();

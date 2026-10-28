@@ -178,6 +178,7 @@ export function PageTransitionProvider({ children, topOffset = "0px" }: PageTran
     const pathname = usePathname();
 
     const [mode, setMode] = useState<TransitionMode>("idle");
+    const isTransitioning = mode !== "idle";
 
     const overlayRef = useRef<HTMLDivElement | null>(null);
     const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -409,10 +410,18 @@ export function PageTransitionProvider({ children, topOffset = "0px" }: PageTran
         coverageRef.current = 0;
         lastFrameTimeRef.current = null;
         spawnCarryRef.current = 0;
-        drawFrame(performance.now());
-    }, [drawFrame, mode]);
+        // Release the full-screen backing buffer while Unity is playing.
+        const canvas = canvasRef.current;
+        if (canvas) {
+            canvas.width = 1;
+            canvas.height = 1;
+        }
+        ctxRef.current = null;
+        sizeRef.current = { width: 0, height: 0, dpr: 1 };
+    }, [mode]);
 
     const resizeCanvas = useCallback(() => {
+        if (!transitionLockRef.current) return;
         const overlay = overlayRef.current;
         const canvas = canvasRef.current;
         if (!overlay || !canvas) return;
@@ -421,6 +430,8 @@ export function PageTransitionProvider({ children, topOffset = "0px" }: PageTran
         const width = Math.max(1, Math.floor(rect.width));
         const height = Math.max(1, Math.floor(rect.height));
         const dpr = Math.min(window.devicePixelRatio || 1, MAX_CANVAS_DPR);
+        const previousSize = sizeRef.current;
+        if (previousSize.width === width && previousSize.height === height && previousSize.dpr === dpr) return;
 
         // CSS size comes from the h-full/w-full classes, so the canvas never outgrows the screen mid-rotation.
         canvas.width = Math.floor(width * dpr);
@@ -431,7 +442,6 @@ export function PageTransitionProvider({ children, topOffset = "0px" }: PageTran
 
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
-        const previousSize = sizeRef.current;
         ctxRef.current = ctx;
         sizeRef.current = { width, height, dpr };
         targetBubbleCountRef.current = getBubbleFieldTargetCount(width, height);
@@ -455,8 +465,7 @@ export function PageTransitionProvider({ children, topOffset = "0px" }: PageTran
     }, [drawFrame]);
 
     useEffect(() => {
-        spriteRef.current = createBubbleSprite();
-        resizeCanvas();
+        if (!isTransitioning) return;
 
         const observer = new ResizeObserver(() => {
             resizeCanvas();
@@ -470,6 +479,13 @@ export function PageTransitionProvider({ children, topOffset = "0px" }: PageTran
         window.addEventListener("resize", handleResize);
 
         return () => {
+            observer.disconnect();
+            window.removeEventListener("resize", handleResize);
+        };
+    }, [isTransitioning, resizeCanvas]);
+
+    useEffect(() => {
+        return () => {
             stopAnimation();
             if (navigationDelayIdRef.current !== null) {
                 window.clearTimeout(navigationDelayIdRef.current);
@@ -479,10 +495,8 @@ export function PageTransitionProvider({ children, topOffset = "0px" }: PageTran
                 window.clearTimeout(routeFallbackIdRef.current);
                 routeFallbackIdRef.current = null;
             }
-            observer.disconnect();
-            window.removeEventListener("resize", handleResize);
         };
-    }, [resizeCanvas, stopAnimation]);
+    }, [stopAnimation]);
 
     const startTransition = useCallback(
         (href: string) => {
@@ -497,6 +511,8 @@ export function PageTransitionProvider({ children, topOffset = "0px" }: PageTran
             }
 
             transitionLockRef.current = true;
+            spriteRef.current ??= createBubbleSprite();
+            resizeCanvas();
             pathAtStartRef.current = pathname;
             pendingHrefRef.current = href;
             transitionStartTimeRef.current = performance.now();
@@ -557,7 +573,7 @@ export function PageTransitionProvider({ children, topOffset = "0px" }: PageTran
                 beginDrainIfReady();
             });
         },
-        [animateCoverage, beginDrainIfReady, drawFrame, finalizeTransition, mode, pathname, router, startActiveAnimation]
+        [animateCoverage, beginDrainIfReady, drawFrame, finalizeTransition, mode, pathname, resizeCanvas, router, startActiveAnimation]
     );
 
     useEffect(() => {
@@ -592,7 +608,7 @@ export function PageTransitionProvider({ children, topOffset = "0px" }: PageTran
                 className={`pointer-events-none fixed inset-x-0 bottom-0 z-40 overflow-hidden ${mode === "idle" ? "opacity-0" : "opacity-100"}`}
                 style={{ top: topOffset }}
             >
-                <canvas ref={canvasRef} className="h-full w-full" />
+                <canvas ref={canvasRef} width={1} height={1} className="h-full w-full" />
             </div>
         </PageTransitionContext.Provider>
     );

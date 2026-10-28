@@ -181,6 +181,9 @@ export default function RapidPathClientPage() {
 
     useEffect(() => {
         const syncWindowSize = () => {
+            // The parent viewport/DPI can change while the square iframe keeps
+            // the same size, so its own resize event is not sufficient.
+            gameFrameRef.current?.contentWindow?.postMessage({ type: "RLG_VIEWPORT_CHANGED" }, window.location.origin);
             // Scale clearance with the window's share of its monitor, so maximized
             // windows keep margins even on small screens. Below 75%, use every pixel.
             const widthRatio = (window.outerWidth || window.innerWidth) / Math.max(1, window.screen.availWidth);
@@ -291,7 +294,7 @@ export default function RapidPathClientPage() {
 
                     {canLoadGame && <button
                         type="button"
-                        className="absolute z-10 inline-flex items-center justify-center rounded-lg border-2 border-black bg-brand-accent text-brand-text backdrop-blur transition hover:bg-brand-glow active:bg-brand-glow data-[pressed=true]:bg-brand-glow"
+                        className="absolute z-10 inline-flex items-center justify-center rounded-lg border-2 border-black bg-brand-accent text-brand-text transition-colors hover:bg-brand-glow active:bg-brand-glow data-[pressed=true]:bg-brand-glow"
                         style={{ width: boardToggleSize, height: boardToggleSize, right: boardToggleInset, bottom: boardToggleInset }}
                         onClick={toggleFocusMode}
                         {...touchPressProps("focus")}
@@ -335,6 +338,7 @@ export default function RapidPathClientPage() {
                         sections={infoSections}
                         height={instructionsLayout ? "100%" : "auto"}
                         showControlsDiagram={!isTouchOnly}
+                        adaptiveText={instructionsLayout !== null}
                         compact
                         inline
                         className="!mt-0 max-w-none"
