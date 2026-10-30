@@ -108,9 +108,9 @@
         matchMedia("(resolution: " + window.devicePixelRatio + "dppx)")
           .addEventListener("change", watchGamePixelRatio, { once: true });
       }
-      var buildVersion = new URLSearchParams(window.location.search).get("v") || "1.0.4";
-      var buildDirectory = new URLSearchParams(window.location.search).get("build") || "Build/RapidPath-1.0.4/Build";
-      var buildFileName = new URLSearchParams(window.location.search).get("file") || "RapidPath-1.0.4";
+      var buildVersion = new URLSearchParams(window.location.search).get("v") || "1.0.5";
+      var buildDirectory = new URLSearchParams(window.location.search).get("build") || "Build/RapidPath-1.0.5/Build";
+      var buildFileName = new URLSearchParams(window.location.search).get("file") || "RapidPath-1.0.5";
 
       function versionedBuildUrl(filename) {
         return buildDirectory + "/" + filename + "?v=" + encodeURIComponent(buildVersion);

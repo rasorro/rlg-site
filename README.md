@@ -48,10 +48,15 @@ cPanel account before deploying.
 ## Unity WebGL builds
 
 The current browser game build version is set in
-`app/rapid-path/rapid-path-client.tsx`. Place that version's Unity WebGL output
+`app/rapid-path/rapid-path-client.tsx`; keep the fallback version, directory, and
+filename in `public/optimized_assets/game_assets/rapid-path/game.html` in sync.
+Place that version's Unity WebGL output
 under `public/optimized_assets/game_assets/rapid-path/Build/RapidPath-<version>/`
 with its loader, `.data.gz`, `.framework.js.gz`, and `.wasm.gz` files in the
-`Build/` subdirectory. Build using Unity's gzip compression; cPanel serves the
+`Build/` subdirectory. Name the files `RapidPath-<version>.loader.js`,
+`RapidPath-<version>.data.gz`, `RapidPath-<version>.framework.js.gz`, and
+`RapidPath-<version>.wasm.gz` (rename Unity's exported filenames if needed).
+Build using Unity's gzip compression; cPanel serves the
 precompressed files with the required encoding and MIME headers. The export
 step fails if the active build is missing.
 

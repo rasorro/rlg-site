@@ -9,7 +9,7 @@ import { useTouchPress } from "../touch-press";
 import { useUi } from "../ui-context";
 import DesktopOnlyPanel from "./desktop-only-panel";
 
-const RAPID_PATH_BUILD_VERSION = "1.0.4";
+const RAPID_PATH_BUILD_VERSION = "1.0.5";
 
 // Keyboard devices get the WASD/arrows diagram; touch-only devices (after opting in) get swipe instructions instead.
 const KEYBOARD_CONTROLS: InfoSection = { title: "Controls", text: "" };
