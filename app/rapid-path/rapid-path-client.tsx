@@ -10,6 +10,7 @@ import { useUi } from "../ui-context";
 import DesktopOnlyPanel from "./desktop-only-panel";
 
 const RAPID_PATH_BUILD_VERSION = "1.0.5";
+const RAPID_PATH_BUILD_REVISION = "a9e55d21a398";
 
 // Keyboard devices get the WASD/arrows diagram; touch-only devices (after opting in) get swipe instructions instead.
 const KEYBOARD_CONTROLS: InfoSection = { title: "Controls", text: "" };
@@ -278,7 +279,7 @@ export default function RapidPathClientPage() {
                             <iframe
                                 ref={gameFrameRef}
                                 src={shouldLoadGame
-                                    ? `/optimized_assets/game_assets/rapid-path/game.html?v=${RAPID_PATH_BUILD_VERSION}&build=Build/RapidPath-${RAPID_PATH_BUILD_VERSION}/Build&file=RapidPath-${RAPID_PATH_BUILD_VERSION}`
+                                    ? `/optimized_assets/game_assets/rapid-path/game.html?v=${RAPID_PATH_BUILD_VERSION}&revision=${RAPID_PATH_BUILD_REVISION}&build=Build/RapidPath-${RAPID_PATH_BUILD_VERSION}/Build&file=RapidPath-${RAPID_PATH_BUILD_VERSION}`
                                     : "about:blank"}
                                 title="Reaction Lab Unity WebGL"
                                 className="h-full w-full border-0 focus:outline-none"

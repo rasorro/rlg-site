@@ -56,6 +56,9 @@ with its loader, `.data.gz`, `.framework.js.gz`, and `.wasm.gz` files in the
 `Build/` subdirectory. Name the files `RapidPath-<version>.loader.js`,
 `RapidPath-<version>.data.gz`, `RapidPath-<version>.framework.js.gz`, and
 `RapidPath-<version>.wasm.gz` (rename Unity's exported filenames if needed).
+When replacing a build without changing its version, update
+`RAPID_PATH_BUILD_REVISION` in the client and the fallback `buildRevision` in
+`game.html` to a new asset hash so browsers fetch the replacement files.
 Build using Unity's gzip compression; cPanel serves the
 precompressed files with the required encoding and MIME headers. The export
 step fails if the active build is missing.
