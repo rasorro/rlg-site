@@ -10,9 +10,11 @@ import { useUi } from "./ui-context";
 export default function AppShell({ children }: { children: React.ReactNode }) {
     const pathname = usePathname();
     const { showUiPanels } = useUi();
-    const isRapidPathRoute = pathname.startsWith("/rapid-path");
+    // Game pages hide the navbar and logo in focus mode / fullscreen. The backdrop measures the navbar's home
+    // link when showLogoCircle changes, so these routes must toggle it with the navbar or the logo keeps a stale (detached) measurement.
+    const isGameRoute = pathname.startsWith("/rapid-path") || pathname.startsWith("/stickman-skydive-simulator");
     const showFactoryEffects = pathname === "/";
-    const showLogoCircle = !isRapidPathRoute || showUiPanels;
+    const showLogoCircle = !isGameRoute || showUiPanels;
 
     useEffect(() => {
         document.body.classList.toggle("no-fog", !showFactoryEffects);

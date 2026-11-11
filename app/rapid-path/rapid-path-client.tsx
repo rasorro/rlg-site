@@ -7,14 +7,12 @@ import { useHasFinePointer } from "../input-capabilities";
 import { usePageTransition } from "../page-transition";
 import { useTouchPress } from "../touch-press";
 import { useUi } from "../ui-context";
-import DesktopOnlyPanel from "./desktop-only-panel";
+import DesktopOnlyPanel from "../desktop-only-panel";
 
 const RAPID_PATH_BUILD_VERSION = "1.0.5";
 const RAPID_PATH_BUILD_REVISION = "a9e55d21a398";
 
-// Keyboard devices get the WASD/arrows diagram; touch-only devices (after opting in) get swipe instructions instead.
 const KEYBOARD_CONTROLS: InfoSection = { title: "Controls", text: "" };
-const TOUCH_CONTROLS: InfoSection = { title: "Controls", text: "Swipe the board to move." };
 
 const OTHER_INFO_SECTIONS: InfoSection[] = [
     {
@@ -80,8 +78,7 @@ export default function RapidPathClientPage() {
     const canLoadGame = hasFinePointer === true || loadAnyway;
     const showDesktopOnlyPanel = hasFinePointer === false && !loadAnyway;
     const showControls = showUiPanels && canLoadGame;
-    const isTouchOnly = hasFinePointer === false;
-    const infoSections = [isTouchOnly ? TOUCH_CONTROLS : KEYBOARD_CONTROLS, ...OTHER_INFO_SECTIONS];
+    const infoSections = [KEYBOARD_CONTROLS, ...OTHER_INFO_SECTIONS];
     // Container units measure the play area, including any space lost to scrollbars.
     // Equal top/bottom clearance keeps the board centered while clearing the navbar's flask.
     // Keep a viewport-based minimum even when touch or monitor reporting is unreliable.
@@ -338,7 +335,7 @@ export default function RapidPathClientPage() {
                     <GameInfoPanel
                         sections={infoSections}
                         height={instructionsLayout ? "100%" : "auto"}
-                        showControlsDiagram={!isTouchOnly}
+                        showControlsDiagram
                         adaptiveText={instructionsLayout !== null}
                         compact
                         inline

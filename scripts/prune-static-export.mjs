@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { UNITY_GAMES, gameBuildRoot, readActiveVersion } from "./unity-games.mjs";
 
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const exportRoot = path.join(projectRoot, "out");
@@ -48,46 +49,34 @@ async function removePath(filePath, removedPaths) {
 }
 
 async function main() {
-  const clientSource = await fs.readFile(
-    path.join(projectRoot, "app", "rapid-path", "rapid-path-client.tsx"),
-    "utf8"
-  );
-  const versionMatch = clientSource.match(
-    /const RAPID_PATH_BUILD_VERSION = "([0-9]+(?:\.[0-9]+)*)";/
-  );
-  if (!versionMatch) {
-    throw new Error("Could not read RAPID_PATH_BUILD_VERSION from the Rapid Path page.");
-  }
+  // Check every game's active build before touching anything.
+  const activeBuilds = [];
+  for (const game of UNITY_GAMES) {
+    const version = await readActiveVersion(projectRoot, game);
+    const buildRoot = gameBuildRoot(exportRoot, game);
+    const currentBuildDirectory = path.join(buildRoot, `${game.prefix}-${version}`, "Build");
+    const requiredFiles = [
+      `${game.prefix}-${version}.loader.js`,
+      `${game.prefix}-${version}.data.gz`,
+      `${game.prefix}-${version}.framework.js.gz`,
+      `${game.prefix}-${version}.wasm.gz`,
+    ];
 
-  const version = versionMatch[1];
-  const rapidPathBuildRoot = path.join(
-    exportRoot,
-    "optimized_assets",
-    "game_assets",
-    "rapid-path",
-    "Build"
-  );
-  const currentBuildDirectory = path.join(rapidPathBuildRoot, `RapidPath-${version}`, "Build");
-  const requiredFiles = [
-    `RapidPath-${version}.loader.js`,
-    `RapidPath-${version}.data.gz`,
-    `RapidPath-${version}.framework.js.gz`,
-    `RapidPath-${version}.wasm.gz`,
-  ];
-
-  for (const requiredFile of requiredFiles) {
-    const requiredPath = path.join(currentBuildDirectory, requiredFile);
-    if (!(await exists(requiredPath))) {
-      throw new Error(`Active Unity build is incomplete: ${requiredPath}`);
+    for (const requiredFile of requiredFiles) {
+      const requiredPath = path.join(currentBuildDirectory, requiredFile);
+      if (!(await exists(requiredPath))) {
+        throw new Error(`Active Unity build is incomplete: ${requiredPath}`);
+      }
+      if (requiredFile.endsWith(".gz") && !(await isGzip(requiredPath))) {
+        throw new Error(`Active Unity build artifact is not gzip-compressed: ${requiredPath}`);
+      }
     }
-    if (requiredFile.endsWith(".gz") && !(await isGzip(requiredPath))) {
-      throw new Error(`Active Unity build artifact is not gzip-compressed: ${requiredPath}`);
-    }
+    activeBuilds.push({ game, version, buildRoot, currentBuildDirectory });
   }
 
   const requiredExportFiles = [
     "index.html",
-    "rapid-path/index.html",
+    ...UNITY_GAMES.map((game) => `${game.slug}/index.html`),
     "robots.txt",
     "sitemap.xml",
     ".htaccess",
@@ -106,33 +95,35 @@ async function main() {
   // Local source media (gitignored) still gets copied out of public/ by the export.
   await removePath(path.join(exportRoot, "original_assets"), removedPaths);
 
-  const entries = await fs.readdir(rapidPathBuildRoot, { withFileTypes: true });
+  for (const { game, version, buildRoot, currentBuildDirectory } of activeBuilds) {
+    const entries = await fs.readdir(buildRoot, { withFileTypes: true });
 
-  for (const entry of entries) {
-    const entryPath = path.join(rapidPathBuildRoot, entry.name);
-    if (entry.isDirectory()) {
-      if (
-        (entry.name.startsWith("RapidPath-") && entry.name !== `RapidPath-${version}`) ||
-        entry.name.includes("DoNotShip")
-      ) {
+    for (const entry of entries) {
+      const entryPath = path.join(buildRoot, entry.name);
+      if (entry.isDirectory()) {
+        if (
+          (entry.name.startsWith(`${game.prefix}-`) && entry.name !== `${game.prefix}-${version}`) ||
+          entry.name.includes("DoNotShip")
+        ) {
+          await removePath(entryPath, removedPaths);
+        }
+        continue;
+      }
+
+      if (/^Unity Builds\.(data|framework\.js|loader\.js|wasm)(\.gz)?$/.test(entry.name)) {
         await removePath(entryPath, removedPaths);
       }
-      continue;
     }
 
-    if (/^Unity Builds\.(data|framework\.js|loader\.js|wasm)(\.gz)?$/.test(entry.name)) {
-      await removePath(entryPath, removedPaths);
-    }
-  }
-
-  const currentBuildEntries = await fs.readdir(currentBuildDirectory, { withFileTypes: true });
-  for (const entry of currentBuildEntries) {
-    if (
-      entry.isFile() &&
-      /\.(data|framework\.js|wasm)$/.test(entry.name) &&
-      (await exists(path.join(currentBuildDirectory, `${entry.name}.gz`)))
-    ) {
-      await removePath(path.join(currentBuildDirectory, entry.name), removedPaths);
+    const currentBuildEntries = await fs.readdir(currentBuildDirectory, { withFileTypes: true });
+    for (const entry of currentBuildEntries) {
+      if (
+        entry.isFile() &&
+        /\.(data|framework\.js|wasm)$/.test(entry.name) &&
+        (await exists(path.join(currentBuildDirectory, `${entry.name}.gz`)))
+      ) {
+        await removePath(path.join(currentBuildDirectory, entry.name), removedPaths);
+      }
     }
   }
 

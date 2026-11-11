@@ -34,7 +34,7 @@ const createVatBubble = (id: number): VatBubble => {
 const STATIC_VAT_BUBBLES = Array.from({ length: VAT_BUBBLES_VISIBLE_COUNT }, (_, i) => createVatBubble(i + 1));
 const GAMES: GameCard[] = [
   { title: "RAPID PATH", href: "/rapid-path", imageSrc: "/optimized_assets/game_assets/rapid-path/rapidPath.webp", gameColor: "var(--color-rapidPath)", isReady: true },
-  { title: "STICKMAN SKYDIVE", href: "/stickman-skydive-simulator", imageSrc: "/optimized_assets/game_assets/stickman-skydive-simulator/stickmanSkydivePreview.webp", gameColor: "var(--color-stickman)", isReady: false },
+  { title: "STICKMAN SKYDIVE", href: "/stickman-skydive-simulator", imageSrc: "/optimized_assets/game_assets/stickman-skydive-simulator/stickmanSkydivePreview.webp", gameColor: "var(--color-stickman)", isReady: true },
   { title: "SWERVE", href: "/swerve", imageSrc: "/optimized_assets/game_assets/swerve/swervePreview.webp", gameColor: "var(--color-swerve)", isReady: false },
 ];
 

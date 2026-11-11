@@ -18,12 +18,12 @@ export const metadata: Metadata = {
     template: "%s | Reaction Lab Games",
   },
   description:
-    "Welcome to Reaction Lab Games! Play Rapid Path for free now! Coming soon: Stickman-Skydive-Simulator, Swerve.",
+    "Welcome to Reaction Lab Games! Play Rapid Path and Stickman Skydive Simulator for free now! Coming soon: Swerve.",
   applicationName: "Reaction Lab Games",
   openGraph: {
     title: "Reaction Lab Games",
     description:
-      "Welcome to Reaction Lab Games! Play Rapid Path for free now! Coming soon: Stickman-Skydive-Simulator, Swerve.",
+      "Welcome to Reaction Lab Games! Play Rapid Path and Stickman Skydive Simulator for free now! Coming soon: Swerve.",
     siteName: "Reaction Lab Games",
     type: "website",
     images: [
@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     card: "summary",
     title: "Reaction Lab Games",
     description:
-      "Welcome to Reaction Lab Games! Play Rapid Path for free now! Coming soon: Stickman-Skydive-Simulator, Swerve.",
+      "Welcome to Reaction Lab Games! Play Rapid Path and Stickman Skydive Simulator for free now! Coming soon: Swerve.",
     images: ["/optimized_assets/global_assets/rlg_logo_256.webp"],
   },
   icons: {

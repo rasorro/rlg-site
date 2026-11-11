@@ -1,11 +1,13 @@
 "use client";
 
-import { useLayoutEffect, useRef } from "react";
+import { useLayoutEffect, useRef, type ReactNode } from "react";
 
 type InfoSection = {
     title: string;
     text?: string;
     items?: string[];
+    // Extra markup shown under the section's text and items.
+    content?: ReactNode;
 };
 
 type GameInfoPanelProps = {
@@ -141,6 +143,7 @@ export default function GameInfoPanel({ sections, height, className = "", showCo
                             {showControlsDiagram && section.title === "Controls" && <ControlsDiagram compact={compact} />}
                             {section.text && <SectionText text={section.text} compact={compact} />}
                             {section.items && <SectionList items={section.items} compact={compact} />}
+                            {section.content}
                         </div>
                     ))}
                 </div>

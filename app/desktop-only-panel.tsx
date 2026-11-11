@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useTouchPress } from "../touch-press";
+import { useTouchPress } from "./touch-press";
 
 type DesktopOnlyPanelProps = {
     boardSize: string;
@@ -10,7 +10,8 @@ type DesktopOnlyPanelProps = {
 
 const BUTTON_GLOSS = "linear-gradient(to bottom, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.15) 45%, rgba(255, 255, 255, 0))";
 
-// Shown in place of the game board on touch-only devices, so they don't download the build unless they choose to play with swipe controls.
+// Shown in place of a game board on touch-only devices, so they don't download the build unless they choose to play anyway.
+// Shared by every keyboard game, so the wording names no game.
 export default function DesktopOnlyPanel({ boardSize, onLoadAnyway }: DesktopOnlyPanelProps) {
     const [copyState, setCopyState] = useState<"idle" | "copied" | "failed">("idle");
     const touchPressProps = useTouchPress();
@@ -34,7 +35,7 @@ export default function DesktopOnlyPanel({ boardSize, onLoadAnyway }: DesktopOnl
             </div>
 
             <p className="engraved-text max-w-[18em] shrink-0 rounded-md border border-black/70 bg-black/20 px-[0.6em] py-[0.4em] leading-snug">
-                Rapid Path plays best with a keyboard, so a computer is recommended. You can still play here by swiping the board.
+                This game is made for a keyboard, so a computer is recommended. It may not work well on this device.
             </p>
 
             <button
@@ -54,7 +55,7 @@ export default function DesktopOnlyPanel({ boardSize, onLoadAnyway }: DesktopOnl
             )}
 
             <button type="button" onClick={onLoadAnyway} {...touchPressProps("load")} className="shrink-0 engraved-text text-[0.85em] underline opacity-80 transition hover:opacity-100 active:opacity-100 data-[pressed=true]:opacity-100">
-                Play here with swipe controls
+                Play anyway
             </button>
         </div>
     );
