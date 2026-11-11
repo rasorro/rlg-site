@@ -13,9 +13,10 @@ export const UNITY_GAMES = [
   },
   {
     name: "Stickman Skydive",
-    slug: "stickman-skydive-simulator",
+    slug: "stickman-skydive-simulator", // asset folder name; the page route is "stickman-skydive"
+    route: "stickman-skydive",
     prefix: "StickmanSkydive",
-    clientFile: path.join("app", "stickman-skydive-simulator", "stickman-client.tsx"),
+    clientFile: path.join("app", "stickman-skydive", "stickman-client.tsx"),
     versionConstant: "STICKMAN_BUILD_VERSION",
   },
 ];

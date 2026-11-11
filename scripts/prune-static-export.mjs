@@ -97,7 +97,7 @@ async function main() {
 
   const requiredExportFiles = [
     "index.html",
-    ...UNITY_GAMES.map((game) => `${game.slug}/index.html`),
+    ...UNITY_GAMES.map((game) => `${game.route ?? game.slug}/index.html`),
     "robots.txt",
     "sitemap.xml",
     ".htaccess",

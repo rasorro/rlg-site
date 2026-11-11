@@ -5,10 +5,10 @@ export const metadata: Metadata = {
     title: "Stickman Skydive Simulator",
     description: "Play Stickman Skydive Simulator in your browser: dive, pull tricks, collect rings and land safely to earn money for gear upgrades.",
     alternates: {
-        canonical: "/stickman-skydive-simulator/",
+        canonical: "/stickman-skydive/",
     },
     openGraph: {
-        url: "/stickman-skydive-simulator/",
+        url: "/stickman-skydive/",
     },
 };
 
