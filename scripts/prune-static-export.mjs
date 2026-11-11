@@ -48,6 +48,27 @@ async function removePath(filePath, removedPaths) {
   removedPaths.push({ path: path.relative(exportRoot, filePath), size });
 }
 
+// Next's client prefetches segment data as "__next.about.__PAGE__.txt" (dots), but the export writes
+// "__next.about/__PAGE__.txt" (folders). cPanel's rewrite for this never matched, so every page logged a 404.
+async function addDottedSegmentFiles(dir) {
+  for (const entry of await fs.readdir(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (!entry.isDirectory() || entry.name === "_next" || entry.name === "optimized_assets") continue;
+    if (!entry.name.startsWith("__next.")) {
+      await addDottedSegmentFiles(full);
+      continue;
+    }
+    const stack = [[full, ""]];
+    while (stack.length) {
+      const [current, prefix] = stack.pop();
+      for (const child of await fs.readdir(current, { withFileTypes: true })) {
+        if (child.isDirectory()) stack.push([path.join(current, child.name), `${prefix}${child.name}.`]);
+        else if (!dryRun) await fs.copyFile(path.join(current, child.name), `${full}.${prefix}${child.name}`);
+      }
+    }
+  }
+}
+
 async function main() {
   // Check every game's active build before touching anything.
   const activeBuilds = [];
@@ -89,6 +110,8 @@ async function main() {
       throw new Error(`Static export is missing required deployment file: ${requiredFile}`);
     }
   }
+
+  await addDottedSegmentFiles(exportRoot);
 
   const initialSize = await pathSize(exportRoot);
   const removedPaths = [];
