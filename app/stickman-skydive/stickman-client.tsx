@@ -210,7 +210,7 @@ export default function StickmanSkydiveClientPage() {
                             src={shouldLoadGame
                                 ? `/optimized_assets/game_assets/stickman-skydive-simulator/game.html?v=${STICKMAN_BUILD_VERSION}&revision=${STICKMAN_BUILD_REVISION}&build=Build/StickmanSkydive-${STICKMAN_BUILD_VERSION}/Build&file=StickmanSkydive-${STICKMAN_BUILD_VERSION}`
                                 : "about:blank"}
-                            title="Stickman Skydive Simulator"
+                            title="Stickman Skydive"
                             className="h-full w-full border-0 focus:outline-none"
                             allow="fullscreen; autoplay; gamepad"
                             loading="eager"

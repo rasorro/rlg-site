@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import StickmanSkydiveClientPage from "./stickman-client";
 
-const title = "Stickman Skydive Simulator";
-const description = "Play Stickman Skydive Simulator in your browser: dive, pull tricks, collect rings and land safely to earn money for gear upgrades.";
+const title = "Stickman Skydive";
+const description = "Play Stickman Skydive in your browser: dive, pull tricks, collect rings and land safely to earn money for gear upgrades.";
 const images = [{
     url: "/optimized_assets/game_assets/stickman-skydive-simulator/stickmanSkydivePreview.webp",
     alt: title,
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     },
 };
 
-export default function StickmanSkydiveSimulatorPage() {
+export default function StickmanSkydivePage() {
     return (
         <>
             <h1 className="sr-only">{title}</h1>
