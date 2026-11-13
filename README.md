@@ -39,6 +39,24 @@ Apache must allow `.htaccess` overrides and provide `mod_rewrite` and
 Unity content types, and cache headers. Next.js response-header configuration
 does not control the static files served by cPanel.
 
+### Search Console after deployment
+
+The sitemap is generated from `app/sitemap.ts` and lists the six public pages,
+including `https://www.reactionlabgames.com/stickman-skydive/`. Keep only preferred,
+working page URLs in it; raw Unity builds and redirecting URLs do not belong there.
+`app/robots.ts` permits the public pages and preview images while blocking raw
+Unity builds and API endpoints. The old `/stickman-skydive-simulator/` route
+permanently redirects to `/stickman-skydive/` through `.htaccess`.
+
+After uploading the contents of `out/`, check the live `/sitemap.xml` and
+`/robots.txt`. In Google Search Console, submit
+`https://www.reactionlabgames.com/sitemap.xml` in **Sitemaps** (enter `sitemap.xml`
+if the site prefix is already shown). Google fetches the hosted XML; there is no
+file upload to Search Console. Inspect
+`https://www.reactionlabgames.com/stickman-skydive/`, run **Test live URL**, then
+use **Request indexing** if available. Submission helps discovery but does not
+guarantee indexing or an immediate update to the indexing report.
+
 The leaderboard endpoints require PHP with PDO MySQL support. Configure the
 database constants and admin token in the server-side `config.php` expected by
 the PHP files; keep that file outside the document root and never upload its

@@ -5,10 +5,10 @@ export const metadata: Metadata = {
     title: "About",
     description: "Learn about Reaction Lab Games and the team building our games.",
     alternates: {
-        canonical: "/about",
+        canonical: "/about/",
     },
     openGraph: {
-        url: "/about",
+        url: "/about/",
     },
 };
 

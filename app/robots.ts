@@ -10,7 +10,15 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/*.html$", "/optimized_assets/", "/original_assets/", "/api/"],
+        // Keep images available for rendering and search, but skip raw game builds.
+        disallow: [
+          "/*.html$",
+          "/optimized_assets/game_assets/*/game.html",
+          "/optimized_assets/game_assets/*/Build/",
+          "/optimized_assets/game_assets/*/StreamingAssets/",
+          "/original_assets/",
+          "/api/",
+        ],
       },
     ],
     sitemap: `${baseUrl}/sitemap.xml`,

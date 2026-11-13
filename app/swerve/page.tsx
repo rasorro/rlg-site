@@ -5,10 +5,10 @@ export const metadata: Metadata = {
     title: "Swerve",
     description: "Swerve is in development. Check back for release details and gameplay updates.",
     alternates: {
-        canonical: "/swerve",
+        canonical: "/swerve/",
     },
     openGraph: {
-        url: "/swerve",
+        url: "/swerve/",
     },
 };
 

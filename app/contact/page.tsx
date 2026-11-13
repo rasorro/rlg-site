@@ -5,10 +5,10 @@ export const metadata: Metadata = {
     title: "Contact",
     description: "Contact Reaction Lab Games by email or Instagram.",
     alternates: {
-        canonical: "/contact",
+        canonical: "/contact/",
     },
     openGraph: {
-        url: "/contact",
+        url: "/contact/",
     },
 };
 
