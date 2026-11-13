@@ -7,7 +7,7 @@ import { LAYOUT_FLAGS_SCRIPT } from "./home-layout";
 
 const universalFont = Coiny({
   weight: "400",
-  variable: "--font-bagel-fat-one",
+  variable: "--font-coiny",
   subsets: ["latin"],
 });
 
@@ -61,7 +61,10 @@ export default function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: LAYOUT_FLAGS_SCRIPT }} />
       </head>
-      <body className="min-h-dvh overflow-x-clip font-sans -z-30">
+      <body className="min-h-dvh overflow-x-clip font-sans">
+        <a href="#main-content" className="skip-link">
+          Skip to main content
+        </a>
         <UiProvider>
           <AppShell>{children}</AppShell>
         </UiProvider>

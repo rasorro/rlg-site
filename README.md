@@ -58,25 +58,22 @@ use **Request indexing** if available. Submission helps discovery but does not
 guarantee indexing or an immediate update to the indexing report.
 
 The leaderboard endpoints require PHP with PDO MySQL support. Configure the
-database constants and admin token in the server-side `config.php` expected by
+database constants (and, for signed scores, `SCORE_SECRET`) in the server-side `config.php` expected by
 the PHP files; keep that file outside the document root and never upload its
-secrets as part of the static export. Confirm the configured path matches the
-cPanel account before deploying.
+secrets as part of the static export. The PHP finds it as `config.php` one level above the web root, so it works
+without the account name hard-coded; after deploying, open the leaderboard to confirm it still loads.
 
 ## Unity WebGL builds
 
-The current browser game build version is set in
-`app/rapid-path/rapid-path-client.tsx`; keep the fallback version, directory, and
-filename in `public/optimized_assets/game_assets/rapid-path/game.html` in sync.
+Each game's build version and cache-busting revision live in `app/games.ts` (the only place; `game.html` reads
+them from the iframe URL, and the build scripts read them from that file).
 Place that version's Unity WebGL output
 under `public/optimized_assets/game_assets/rapid-path/Build/RapidPath-<version>/`
 with its loader, `.data.gz`, `.framework.js.gz`, and `.wasm.gz` files in the
 `Build/` subdirectory. Name the files `RapidPath-<version>.loader.js`,
 `RapidPath-<version>.data.gz`, `RapidPath-<version>.framework.js.gz`, and
 `RapidPath-<version>.wasm.gz` (rename Unity's exported filenames if needed).
-When replacing a build without changing its version, update
-`RAPID_PATH_BUILD_REVISION` in the client and the fallback `buildRevision` in
-`game.html` to a new asset hash so browsers fetch the replacement files.
+When replacing a build without changing its version, change that game's `*_BUILD_REVISION` in `app/games.ts` to a new value so browsers fetch the replacement files.
 Build using Unity's gzip compression; cPanel serves the
 precompressed files with the required encoding and MIME headers. The export
 step fails if the active build is missing.

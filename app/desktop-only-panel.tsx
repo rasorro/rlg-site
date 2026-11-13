@@ -31,7 +31,7 @@ export default function DesktopOnlyPanel({ boardSize, onLoadAnyway }: DesktopOnl
             style={{ fontSize: `max(11px, calc(${boardSize} / 22))` }}
         >
             <div className="shrink-0 border-3 border-black bg-brand-background px-[0.75em] py-[0.35em] leading-none">
-                <h1 className="engraved-title text-[1.6em] font-bold">BEST ON DESKTOP</h1>
+                <h2 className="engraved-title text-[1.6em] font-bold">BEST ON DESKTOP</h2>
             </div>
 
             <p className="engraved-text max-w-[18em] shrink-0 rounded-md border border-black/70 bg-black/20 px-[0.6em] py-[0.4em] leading-snug">

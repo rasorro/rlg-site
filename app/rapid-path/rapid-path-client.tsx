@@ -1,16 +1,10 @@
 "use client";
 
-import Image from "next/image";
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useRef, useState } from "react";
 import GameInfoPanel, { type InfoSection } from "../game-info-panel";
-import { useHasFinePointer } from "../input-capabilities";
-import { usePageTransition } from "../page-transition";
-import { useTouchPress } from "../touch-press";
+import { RAPID_PATH_BUILD } from "../games";
+import { BoardToggleButton, GameFrame, useUnityGame } from "../unity-game";
 import { useUi } from "../ui-context";
-import DesktopOnlyPanel from "../desktop-only-panel";
-
-const RAPID_PATH_BUILD_VERSION = "1.0.5";
-const RAPID_PATH_BUILD_REVISION = "a9e55d21a398";
 
 const KEYBOARD_CONTROLS: InfoSection = { title: "Controls", text: "" };
 
@@ -37,46 +31,17 @@ const OTHER_INFO_SECTIONS: InfoSection[] = [
     },
 ];
 
-const PORTRAIT_QUERY = "(orientation: portrait)";
-
 type InstructionsLayout = { top: number; left: number; width: number; height: number };
-
-function subscribeToOrientation(onChange: () => void) {
-    const mediaQuery = window.matchMedia(PORTRAIT_QUERY);
-    mediaQuery.addEventListener("change", onChange);
-    return () => mediaQuery.removeEventListener("change", onChange);
-}
-
-// Defaults to portrait before hydration; only consulted once the game reports its D-pad is on.
-function useIsPortrait(): boolean {
-    return useSyncExternalStore(
-        subscribeToOrientation,
-        () => window.matchMedia(PORTRAIT_QUERY).matches,
-        () => true,
-    );
-}
 
 export default function RapidPathClientPage() {
     const { showUiPanels, setShowUiPanels } = useUi();
-    const { isTransitioning } = usePageTransition();
-    const gameFrameRef = useRef<HTMLIFrameElement | null>(null);
     const playAreaRef = useRef<HTMLDivElement | null>(null);
     const boardRef = useRef<HTMLDivElement | null>(null);
     const [instructionsLayout, setInstructionsLayout] = useState<InstructionsLayout | null>(null);
-    const [shouldLoadGame, setShouldLoadGame] = useState(false);
     const [focusMarginRatio, setFocusMarginRatio] = useState(0.05);
-    const [isGameReady, setIsGameReady] = useState(false);
-    const [gameLoadError, setGameLoadError] = useState(false);
-    const [loadAnyway, setLoadAnyway] = useState(false);
-    // Long side : short side the game asks for while its on-screen D-pad is shown; null when it's off.
-    const [dPadAspect, setDPadAspect] = useState<number | null>(null);
-    const isPortrait = useIsPortrait();
 
-    // Touch-only devices see the desktop panel instead of the game until they opt in; null means not yet hydrated.
-    const hasFinePointer = useHasFinePointer();
-    const touchPressProps = useTouchPress();
-    const canLoadGame = hasFinePointer === true || loadAnyway;
-    const showDesktopOnlyPanel = hasFinePointer === false && !loadAnyway;
+    const game = useUnityGame();
+    const { canLoadGame, requestGameFocus, notifyViewportChanged } = game;
     const showControls = showUiPanels && canLoadGame;
     const infoSections = [KEYBOARD_CONTROLS, ...OTHER_INFO_SECTIONS];
     // Container units measure the play area, including any space lost to scrollbars.
@@ -94,26 +59,7 @@ export default function RapidPathClientPage() {
     const availableWidth = `calc(100cqw - 2 * ${horizontalMargin})`;
     const availableHeight = `calc(100cqh - 2 * ${verticalMargin})`;
 
-    // With the D-pad on, the game area grows along the long axis: pad beneath the board in portrait
-    // (like a Game Boy), beside it in landscape. The game lays itself out inside whatever shape it gets.
-    let boardSize: string;
-    let gameWidth: string;
-    let gameHeight: string;
-    if (dPadAspect === null) {
-        boardSize = `min(${availableWidth}, ${availableHeight})`;
-        gameWidth = boardSize;
-        gameHeight = boardSize;
-    } else if (isPortrait) {
-        boardSize = `min(${availableWidth}, calc(${availableHeight} / ${dPadAspect}))`;
-        gameWidth = boardSize;
-        gameHeight = `calc(${boardSize} * ${dPadAspect})`;
-    } else {
-        boardSize = `min(${availableHeight}, calc(${availableWidth} / ${dPadAspect}))`;
-        gameWidth = `calc(${boardSize} * ${dPadAspect})`;
-        gameHeight = boardSize;
-    }
-    const boardToggleSize = `clamp(1rem, calc(${boardSize} * 0.0425), 3rem)`;
-    const boardToggleInset = `clamp(0.35rem, calc(${boardSize} * 0.013), 0.9rem)`;
+    const boardSize = `min(${availableWidth}, ${availableHeight})`;
 
     useEffect(() => {
         if (!showControls || !playAreaRef.current || !boardRef.current) return;
@@ -145,43 +91,8 @@ export default function RapidPathClientPage() {
     }, [showControls]);
 
     useEffect(() => {
-        if (shouldLoadGame || isTransitioning || !canLoadGame) {
-            return;
-        }
-
-        const timeoutId = window.setTimeout(() => {
-            setShouldLoadGame(true);
-        }, 120);
-
-        return () => window.clearTimeout(timeoutId);
-    }, [canLoadGame, isTransitioning, shouldLoadGame]);
-
-    useEffect(() => {
-        const handleGameMessage = (event: MessageEvent) => {
-            if (event.origin !== window.location.origin) {
-                return;
-            }
-
-            if (event.data?.type === "RLG_GAME_READY") {
-                setIsGameReady(true);
-                setGameLoadError(false);
-            } else if (event.data?.type === "RLG_GAME_ERROR") {
-                setGameLoadError(true);
-            } else if (event.data?.type === "RLG_DPAD_CHANGED") {
-                const aspect = Number(event.data.aspect);
-                setDPadAspect(event.data.enabled && aspect >= 1 ? aspect : null);
-            }
-        };
-
-        window.addEventListener("message", handleGameMessage);
-        return () => window.removeEventListener("message", handleGameMessage);
-    }, []);
-
-    useEffect(() => {
         const syncWindowSize = () => {
-            // The parent viewport/DPI can change while the square iframe keeps
-            // the same size, so its own resize event is not sufficient.
-            gameFrameRef.current?.contentWindow?.postMessage({ type: "RLG_VIEWPORT_CHANGED" }, window.location.origin);
+            notifyViewportChanged();
             // Scale clearance with the window's share of its monitor, so maximized
             // windows keep margins even on small screens. Below 75%, use every pixel.
             const widthRatio = (window.outerWidth || window.innerWidth) / Math.max(1, window.screen.availWidth);
@@ -201,20 +112,7 @@ export default function RapidPathClientPage() {
             window.removeEventListener("resize", syncWindowSize);
             window.visualViewport?.removeEventListener("resize", syncWindowSize);
         };
-    }, []);
-
-    const requestGameFocus = useCallback(() => {
-        const frame = gameFrameRef.current;
-        if (!frame) return;
-
-        frame.focus({ preventScroll: true });
-        try {
-            frame.contentWindow?.postMessage({ type: "RLG_FOCUS_GAME" }, window.location.origin);
-            frame.contentWindow?.focus();
-        } catch {
-            // Ignore cross-frame focus errors in restrictive environments.
-        }
-    }, []);
+    }, [notifyViewportChanged]);
 
     useEffect(() => {
         const timeoutId = window.setTimeout(() => {
@@ -231,7 +129,8 @@ export default function RapidPathClientPage() {
     };
 
     return (
-        <main className="relative w-full min-w-0 bg-brand-background-dark">
+        <main id="main-content" tabIndex={-1} className="relative w-full min-w-0 bg-brand-background-dark">
+            <h1 className="sr-only">Rapid Path</h1>
             <div
                 ref={playAreaRef}
                 className="grid w-full place-items-center"
@@ -243,87 +142,22 @@ export default function RapidPathClientPage() {
                 <div ref={boardRef} className="relative">
                     <div
                         className="box-border shrink-0 overflow-hidden ring ring-inset ring-black bg-brand-background"
-                        style={{ width: gameWidth, height: gameHeight }}
+                        style={{ width: boardSize, height: boardSize }}
                     >
-                        <>
-                            {showDesktopOnlyPanel && <DesktopOnlyPanel boardSize={boardSize} onLoadAnyway={() => setLoadAnyway(true)} />}
-                            {!showDesktopOnlyPanel && !isGameReady && (!shouldLoadGame || gameLoadError) && (
-                                <div
-                                    className="pointer-events-none absolute inset-0 z-[1] flex items-center justify-center bg-brand-background"
-                                    aria-live="polite"
-                                >
-                                    {gameLoadError ? (
-                                        <span className="px-6 text-center text-2xl font-bold uppercase tracking-wide text-brand-text">
-                                            The game could not be loaded. Please refresh the page and try again.
-                                        </span>
-                                    ) : (
-                                        <div className="flex flex-col items-center gap-4 text-brand-text">
-                                            <Image
-                                                src="/optimized_assets/global_assets/rlg_logo_256.webp"
-                                                alt="Reaction Lab Games"
-                                                width={96}
-                                                height={96}
-                                                className="h-24 w-24 object-contain"
-                                                priority
-                                            />
-                                            <span className="text-center text-xl font-bold uppercase tracking-wide">
-                                                Loading Rapid Path...
-                                            </span>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-                            <iframe
-                                ref={gameFrameRef}
-                                src={shouldLoadGame
-                                    ? `/optimized_assets/game_assets/rapid-path/game.html?v=${RAPID_PATH_BUILD_VERSION}&revision=${RAPID_PATH_BUILD_REVISION}&build=Build/RapidPath-${RAPID_PATH_BUILD_VERSION}/Build&file=RapidPath-${RAPID_PATH_BUILD_VERSION}`
-                                    : "about:blank"}
-                                title="Reaction Lab Unity WebGL"
-                                className="h-full w-full border-0 focus:outline-none"
-                                allow="fullscreen; autoplay; gamepad"
-                                loading="eager"
-                                onLoad={() => {
-                                    setIsGameReady(false);
-                                    requestGameFocus();
-                                }}
-                            />
-                        </>
+                        <GameFrame build={RAPID_PATH_BUILD} game={game} title="Rapid Path" boardSize={boardSize} />
                     </div>
 
-                    {canLoadGame && <button
-                        type="button"
-                        className="absolute z-10 inline-flex items-center justify-center rounded-lg border-2 border-black bg-brand-accent text-brand-text transition-colors hover:bg-brand-glow active:bg-brand-glow data-[pressed=true]:bg-brand-glow"
-                        style={{ width: boardToggleSize, height: boardToggleSize, right: boardToggleInset, bottom: boardToggleInset }}
-                        onClick={toggleFocusMode}
-                        {...touchPressProps("focus")}
-                        aria-label={showUiPanels ? "Enter focus mode" : "Exit focus mode"}
-                        title={showUiPanels ? "Enter focus mode" : "Exit focus mode"}
-                        aria-pressed={!showUiPanels}
-                    >
-                        {showUiPanels ? (
-                            <svg viewBox="0 0 24 24" className="h-[70%] w-[70%]" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                                <path d="M9 4H4v5" />
-                                <path d="m4 4 6 6" />
-                                <path d="M15 4h5v5" />
-                                <path d="m20 4-6 6" />
-                                <path d="M9 20H4v-5" />
-                                <path d="m4 20 6-6" />
-                                <path d="M15 20h5v-5" />
-                                <path d="m20 20-6-6" />
-                            </svg>
-                        ) : (
-                            <svg viewBox="0 0 24 24" className="h-[70%] w-[70%]" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-                                <path d="M9 4H4v5" />
-                                <path d="m4 4 6 6" />
-                                <path d="M15 4h5v5" />
-                                <path d="m20 4-6 6" />
-                                <path d="M9 20H4v-5" />
-                                <path d="m4 20 6-6" />
-                                <path d="M15 20h5v-5" />
-                                <path d="m20 20-6-6" />
-                            </svg>
-                        )}
-                    </button>}
+                    {canLoadGame && (
+                        <BoardToggleButton
+                            active={!showUiPanels}
+                            label={showUiPanels ? "Enter focus mode" : "Exit focus mode"}
+                            onClick={toggleFocusMode}
+                            boardSize={boardSize}
+                            sizeRatio={0.0425}
+                            insetRatio={0.013}
+                            pressKey="focus"
+                        />
+                    )}
                 </div>
 
             </div>

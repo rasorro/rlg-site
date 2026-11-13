@@ -2,41 +2,19 @@ import type { MetadataRoute } from "next";
 
 export const dynamic = "force-static";
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://www.reactionlabgames.com";
+const baseUrl = "https://www.reactionlabgames.com";
 
-  // Omit lastModified until actual content update dates are tracked.
-  // A rebuild alone does not mean every page changed.
-  return [
-    {
-      url: `${baseUrl}/`,
-      changeFrequency: "weekly",
-      priority: 1,
-    },
-    {
-      url: `${baseUrl}/rapid-path/`,
-      changeFrequency: "weekly",
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/about/`,
-      changeFrequency: "monthly",
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/contact/`,
-      changeFrequency: "monthly",
-      priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/stickman-skydive/`,
-      changeFrequency: "monthly",
-      priority: 0.5,
-    },
-    {
-      url: `${baseUrl}/swerve/`,
-      changeFrequency: "monthly",
-      priority: 0.5,
-    },
-  ];
+// No lastModified/changeFrequency on purpose: stamping every page with the build time on each deploy is inaccurate,
+// and Google ignores both when they aren't trustworthy.
+const PAGES: [path: string, priority: number][] = [
+  ["/", 1],
+  ["/rapid-path/", 0.9],
+  ["/stickman-skydive/", 0.9],
+  ["/about/", 0.6],
+  ["/contact/", 0.6],
+  ["/swerve/", 0.5],
+];
+
+export default function sitemap(): MetadataRoute.Sitemap {
+  return PAGES.map(([path, priority]) => ({ url: `${baseUrl}${path}`, priority }));
 }

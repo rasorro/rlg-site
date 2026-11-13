@@ -31,10 +31,5 @@ export const metadata: Metadata = {
 };
 
 export default function StickmanSkydivePage() {
-    return (
-        <>
-            <h1 className="sr-only">{title}</h1>
-            <StickmanSkydiveClientPage />
-        </>
-    );
+    return <StickmanSkydiveClientPage />;
 }

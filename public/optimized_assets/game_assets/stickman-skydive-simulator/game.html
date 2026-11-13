@@ -94,10 +94,10 @@
           .addEventListener("change", watchGamePixelRatio, { once: true });
       }
       var params = new URLSearchParams(window.location.search);
-      var buildVersion = params.get("v") || "1.0.0";
-      var buildRevision = params.get("revision") || "";
-      var buildDirectory = params.get("build") || "Build/StickmanSkydive-1.0.0/Build";
-      var buildFileName = params.get("file") || "StickmanSkydive-1.0.0";
+      var buildVersion = params.get("v");
+      var buildRevision = params.get("revision");
+      var buildDirectory = params.get("build");
+      var buildFileName = params.get("file");
 
       function versionedBuildUrl(filename) {
         return buildDirectory + "/" + filename + "?v=" + encodeURIComponent(buildVersion) + "&revision=" + encodeURIComponent(buildRevision);
@@ -122,7 +122,7 @@
       }
 
       window.addEventListener("message", function (event) {
-        if (event.origin !== window.location.origin) {
+        if (event.origin !== window.location.origin || event.source !== window.parent) {
           return;
         }
 

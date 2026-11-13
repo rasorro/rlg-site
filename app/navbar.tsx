@@ -1,12 +1,20 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { TransitionLink } from "./page-transition";
 import { useTouchPress } from "./touch-press";
 import { useUi } from "./ui-context";
 
+const NAV_LINKS = [
+    { slug: "about", label: "About" },
+    { slug: "contact", label: "Contact" },
+] as const;
+
 export default function Navbar() {
     const { showUiPanels } = useUi();
     const touchPressProps = useTouchPress();
+    // The title is the home page's only heading; other pages bring their own h1.
+    const TitleTag = usePathname() === "/" ? "h1" : "div";
 
     if (!showUiPanels) return null;
 
@@ -40,30 +48,22 @@ export default function Navbar() {
             style={navMetalStyle}
         >
             <div className="rlg-nav-bar font-bold">
-                <div aria-label="Reaction Lab Games" className="rlg-nav-title leading-none bg-brand-background px-[0.5em] py-[0.2em] border-3 border-black text-center">
+                <TitleTag className="rlg-nav-title leading-none bg-brand-background px-[0.5em] py-[0.2em] border-3 border-black text-center">
                     <span className="engraved-title relative top-[0.1em] whitespace-nowrap">REACTION LAB GAMES</span>
-                </div>
+                </TitleTag>
 
                 <div className="rlg-nav-actions">
-                    <TransitionLink href="/about" className={`rlg-nav-about ${navButtonClass}`} aria-label="Go to About page" {...touchPressProps("about")}>
-                        <span aria-hidden="true" className="pointer-events-none absolute inset-[0px] z-20 rounded-[10px] bg-white opacity-[0.15]" />
-                        <span
-                            aria-hidden="true"
-                            className="pointer-events-none absolute inset-0 z-0"
-                            style={{ background: "linear-gradient(to bottom, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.15) 45%, rgba(255, 255, 255, 0))" }}
-                        />
-                        <span className="engraved-title relative z-10">ABOUT</span>
-                    </TransitionLink>
-
-                    <TransitionLink href="/contact" className={`rlg-nav-contact ${navButtonClass}`} aria-label="Go to Contact page" {...touchPressProps("contact")}>
-                        <span aria-hidden="true" className="pointer-events-none absolute inset-[0px] z-20 rounded-[10px] bg-white opacity-[0.15]" />
-                        <span
-                            aria-hidden="true"
-                            className="pointer-events-none absolute inset-0 z-0"
-                            style={{ background: "linear-gradient(to bottom, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.15) 45%, rgba(255, 255, 255, 0))" }}
-                        />
-                        <span className="engraved-title relative z-10">CONTACT</span>
-                    </TransitionLink>
+                    {NAV_LINKS.map(({ slug, label }) => (
+                        <TransitionLink key={slug} href={`/${slug}`} className={`rlg-nav-${slug} ${navButtonClass}`} aria-label={`Go to ${label} page`} {...touchPressProps(slug)}>
+                            <span aria-hidden="true" className="pointer-events-none absolute inset-[0px] z-20 rounded-[10px] bg-white opacity-[0.15]" />
+                            <span
+                                aria-hidden="true"
+                                className="pointer-events-none absolute inset-0 z-0"
+                                style={{ background: "linear-gradient(to bottom, rgba(255, 255, 255, 0.35), rgba(255, 255, 255, 0.15) 45%, rgba(255, 255, 255, 0))" }}
+                            />
+                            <span className="engraved-title relative z-10">{label.toUpperCase()}</span>
+                        </TransitionLink>
+                    ))}
                 </div>
             </div>
             <TransitionLink

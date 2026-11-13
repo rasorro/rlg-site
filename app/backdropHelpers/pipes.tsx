@@ -1,4 +1,5 @@
-import { useId } from "react";
+import { useEffect, useId } from "react";
+import { PIPES_READY_ATTR, PIPES_READY_EVENT } from "../home-layout";
 import type { AnchorPoint, CanvasSize, CardBox, PipePath } from "./types";
 
 type PipesProps = {
@@ -45,6 +46,12 @@ export function createStackedPipePaths(cards: CardBox[], width: number): PipePat
 
 export default function Pipes({ viewportSize, pipePaths, pipeScale }: PipesProps) {
 	const underShadowWidth = 30 * pipeScale;
+	useEffect(() => {
+		if (pipePaths.length === 0) return;
+		document.documentElement.setAttribute(PIPES_READY_ATTR, "");
+		window.dispatchEvent(new Event(PIPES_READY_EVENT));
+	}, [pipePaths.length]);
+
 	const idPrefix = useId().replace(/:/g, "");
 	const glowFilterId = `${idPrefix}-pipe-under-glow`;
 	const glowBlurAmount = 4 * pipeScale;

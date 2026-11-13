@@ -51,7 +51,7 @@ Repeat browser checks when changing this code:
 - Toggle focus mode both ways without reloading Unity.
 - Navigate back home, resize during the bubble transition, and confirm the
   transition finishes, its canvas returns to 1x1, and all three desktop pipes return.
-- Check portrait/landscape layouts and the `RLG_DPAD_CHANGED` layout message.
+- Check portrait/landscape layouts.
 - Check 1x, 2x and 3x density, including changing density without changing iframe size.
 - Check touch-only opt-in and swipe instructions.
 - Mutate an unrelated body data attribute; the backdrop should perform no new

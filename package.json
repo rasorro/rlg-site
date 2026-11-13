@@ -14,7 +14,7 @@
     "images:optimize:ultra": "node scripts/optimize-images.mjs --quality=1 --max=1024"
   },
   "dependencies": {
-    "next": "16.2.4",
+    "next": "16.4.6",
     "react": "19.2.4",
     "react-dom": "19.2.4"
   },
@@ -24,8 +24,8 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.2.4",
-    "sharp": "^0.34.4",
+    "eslint-config-next": "16.4.6",
+    "sharp": "^0.35.5",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

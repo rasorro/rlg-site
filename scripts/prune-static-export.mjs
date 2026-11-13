@@ -103,7 +103,6 @@ async function main() {
     ".htaccess",
     "api/leaderboard.php",
     "api/submit-score.php",
-    "api/clear-leaderboard.php",
   ];
   for (const requiredFile of requiredExportFiles) {
     if (!(await exists(path.join(exportRoot, requiredFile)))) {

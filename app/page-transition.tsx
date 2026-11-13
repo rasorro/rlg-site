@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { preloadGameForRoute } from "./games";
 import { usePathname, useRouter } from "next/navigation";
 import {
     createContext,
@@ -636,6 +637,7 @@ export function TransitionLink({ href, onClick, target, ...props }: TransitionLi
             if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
 
             event.preventDefault();
+            preloadGameForRoute(href);
             startTransition(href);
         },
         [href, onClick, startTransition, target]

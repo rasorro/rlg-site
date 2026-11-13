@@ -96,11 +96,32 @@ RewriteRule ^(.*/__next\.[^/]+)\.__PAGE__\.txt$ /$1/__PAGE__.txt [L]
 </FilesMatch>
 
 # Stickman Skydive audio: the manifest is re-checked on every visit (its hashes are the bundles' browser
-# cache key); the bundles keep a fixed file name, so they get a short cache and Unity's hash cache does the rest.
+# cache key); the bundles keep a fixed file name, so they get 30 days. If you ever change one, rename it
+# (or shorten the cache below first) so returning visitors don't keep the old copy.
 <FilesMatch "^audio\.json$">
     Header set Cache-Control "no-cache"
 </FilesMatch>
 
 <FilesMatch "\.bundle$">
-    Header set Cache-Control "public, max-age=86400"
+    Header set Cache-Control "public, max-age=2592000"
 </FilesMatch>
+
+# Next.js build output is content-hashed, so it never changes under the same name.
+<If "%{REQUEST_URI} =~ m#^/_next/static/#">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+</If>
+
+# Site art keeps its file name when edited, so give it a long but not immutable cache (30 days).
+<FilesMatch "\.(webp|png|svg|ico)$">
+    Header set Cache-Control "public, max-age=2592000"
+</FilesMatch>
+
+# Security headers (need mod_headers, which this file already requires).
+# nosniff: browsers must trust our declared file types instead of guessing.
+Header always set X-Content-Type-Options "nosniff"
+# Other sites only see our domain, not the full page address, when a visitor clicks away.
+Header always set Referrer-Policy "strict-origin-when-cross-origin"
+# Our pages (the games' own iframes included) can only be framed by our own site, so no one can wrap them in a fake page.
+Header always set X-Frame-Options "SAMEORIGIN"
+# The site never needs these browser features, so switch them off for it and for anything embedded in it.
+Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=()"

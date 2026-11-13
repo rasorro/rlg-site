@@ -4,7 +4,8 @@ import Image from "next/image";
 import { memo, useEffect, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode, type RefObject } from "react";
 import Pipes, { createStackedPipePaths } from "./backdropHelpers/pipes";
 import type { CanvasSize, PipePath } from "./backdropHelpers/types";
-import { isHomeStacked, LAYOUT_FLAGS_EVENT } from "./home-layout";
+import { BOOT_ATTR, HOME_BACKGROUND_SRC, isHomeStacked, LAYOUT_FLAGS_EVENT, PIPES_READY_ATTR, PIPES_READY_EVENT } from "./home-layout";
+import { HOVER_PRELOAD_MS, preloadGameForRoute } from "./games";
 import { useHasFinePointer } from "./input-capabilities";
 import { TransitionLink } from "./page-transition";
 import { useTouchPress } from "./touch-press";
@@ -12,12 +13,12 @@ import { useTouchPress } from "./touch-press";
 const GAME_CARD_SIZE = "var(--rlg-gamecard-size)", GAME_CARD_IMAGE_SIZES = "(max-width: 1024px) 40vw, 70rem", GAME_CARD_FONT_SIZE = "calc(var(--rlg-gamecard-size) / 24)", GAME_CARD_GAP = "clamp(1rem, 5vw, 6rem)", GAME_CARD_VAT_LAYER_SRC = "/optimized_assets/global_assets/rlg_layer_vat.webp", GAME_CARD_GLOW_LAYER_SRC = "/optimized_assets/global_assets/rlg_layer_glow.svg", GAME_CARD_METAL_LAYER_SRC = "/optimized_assets/global_assets/rlg_layer_metal.webp", GAME_CARD_VAT_LAYER_OPACITY = 0, VAT_BUBBLES_VISIBLE_COUNT = 18, VAT_LIQUID_BACKGROUND = "linear-gradient(to top, rgba(0, 255, 157, 0) 0%, rgba(255, 0, 153, 0) 35%)", VAT_GLASS_BACKGROUND = "linear-gradient(to bottom, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.2) 28%, rgba(255, 255, 255, 0.15) 62%), radial-gradient(120% 75% at 50% -8%, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.02) 68%)", CARD_ACTION_GLOSS = "linear-gradient(to bottom, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.15) 45%, rgba(255, 255, 255, 0))", VAT_BUBBLE_SPEED_MULTIPLIER_BASE = 1, VAT_BUBBLE_SPEED_MULTIPLIER_HOVER = 6, STACKED_PIPE_SCALE_CARD_SIZE = 420, CENTER_BAND_ROOT_MARGIN = "-45% 0px -45% 0px";
 
 const CARD_GRID_STYLE = { "--rlg-gamecard-gap": GAME_CARD_GAP } as CSSProperties;
-const GAME_CARD_ARTICLE_CLASS = "group relative aspect-square overflow-hidden", GAME_CARD_IMAGE_WINDOW_CLASS = "pointer-events-none absolute left-1/2 top-1/2 z-[2] h-[12em] w-[12em] -translate-x-1/2 -translate-y-[50%] overflow-hidden border-[0.2em] border-black bg-brand-background", GAME_CARD_FROST_LAYER_CLASS = "pointer-events-none absolute inset-y-0 h-full w-[83%] left-1/2 -translate-x-1/2 z-[1] rounded-[33%] backdrop-blur-[0.3em] bg-white/25", VAT_BUBBLE_LAYER_CLASS = "pointer-events-none absolute inset-y-0 left-1/2 z-[3] h-full w-[83%] -translate-x-1/2 overflow-hidden rounded-[33%]", VAT_LIQUID_LAYER_CLASS = "pointer-events-none absolute inset-y-0 left-1/2 z-[4] h-full w-[83%] -translate-x-1/2 rounded-[33%]", VAT_GLASS_LAYER_CLASS = "pointer-events-none absolute inset-y-0 h-full w-[83%] left-1/2 -translate-x-1/2 z-[5] rounded-[33%] border-[0.2em] border-white/30 ring-3 ring-black", VAT_GLOW_MASK_LAYER_CLASS = "pointer-events-none absolute inset-0 z-[6]", CARD_ACTION_BASE_CLASS = "translate-y-[-0.4em] relative inline-flex items-center justify-center overflow-hidden rounded-full border-3 border-white/40 ring-2 ring-black w-[8em] h-[1.5em] text-[1.75em] font-bold leading-none text-brand-text transition hover:bg-brand-glow active:bg-brand-glow data-[pressed=true]:bg-brand-glow";
+const GAME_CARD_ARTICLE_CLASS = "group relative aspect-square overflow-hidden", GAME_CARD_IMAGE_WINDOW_CLASS = "pointer-events-none absolute left-1/2 top-1/2 z-[2] h-[12em] w-[12em] -translate-x-1/2 -translate-y-[50%] overflow-hidden border-[0.2em] border-black bg-brand-background", GAME_CARD_FROST_LAYER_CLASS = "pointer-events-none absolute inset-y-0 h-full w-[83%] left-1/2 -translate-x-1/2 z-[1] rounded-[33%] backdrop-blur-[0.3em] bg-white/25", VAT_BUBBLE_LAYER_CLASS = "pointer-events-none absolute inset-y-0 left-1/2 z-[3] h-full w-[83%] -translate-x-1/2 overflow-hidden rounded-[33%]", VAT_LIQUID_LAYER_CLASS = "pointer-events-none absolute inset-y-0 left-1/2 z-[4] h-full w-[83%] -translate-x-1/2 rounded-[33%]", VAT_GLASS_LAYER_CLASS = "pointer-events-none absolute inset-y-0 h-full w-[83%] left-1/2 -translate-x-1/2 z-[5] rounded-[33%] border-[0.2em] border-white/30 ring-3 ring-black", VAT_GLOW_MASK_LAYER_CLASS = "pointer-events-none absolute inset-0 z-[6]", CARD_ACTION_BASE_CLASS = "rlg-card-action translate-y-[-0.4em] relative inline-flex items-center justify-center overflow-hidden rounded-full border-3 border-white/40 ring-2 ring-black w-[8em] h-[1.5em] text-[1.75em] font-bold leading-none text-brand-text transition hover:bg-brand-glow active:bg-brand-glow data-[pressed=true]:bg-brand-glow";
 const GLOW_MASK_BASE_STYLE = { opacity: 1, maskSize: "cover", maskPosition: "center", maskRepeat: "no-repeat", WebkitMaskSize: "cover", WebkitMaskRepeat: "no-repeat" } as const;
 
 type VatBubble = { id: number; cx: number; cy: number; r: number; driftPx: number; durationSeconds: number; delaySeconds: number; risePx: number; opacity: number };
 type GameCard = { title: string; href: string; imageSrc?: string; gameColor: string; isReady: boolean };
-type CardActionProps = { isReady: boolean; href: string; onPlayHoverChange?: (isHovering: boolean) => void };
+type CardActionProps = { isReady: boolean; href: string; gameTitle: string; onPlayHoverChange?: (isHovering: boolean) => void };
 type VatBubbleLayerProps = { boosted: boolean; prefersReducedMotion: boolean };
 type GameCardTileProps = { game: GameCard; index: number; prefersReducedMotion: boolean; isCentered: boolean };
 
@@ -52,12 +53,20 @@ function usePrefersReducedMotion() {
 
 const useHasHydrated = () => useSyncExternalStore(() => () => {}, () => true, () => false);
 
-function CardAction({ isReady, href, onPlayHoverChange }: CardActionProps) {
+function CardAction({ isReady, href, gameTitle, onPlayHoverChange }: CardActionProps) {
   const label = isReady ? "Play" : "Coming Soon";
   const touchPressProps = useTouchPress(onPlayHoverChange);
+  // Hovering (or focusing) Play for half a second starts the game download; a click starts it immediately (see TransitionLink).
+  const preloadTimer = useRef(0);
+  const startPreload = () => {
+    window.clearTimeout(preloadTimer.current);
+    preloadTimer.current = window.setTimeout(() => preloadGameForRoute(href), HOVER_PRELOAD_MS);
+  };
+  const cancelPreload = () => window.clearTimeout(preloadTimer.current);
+  useEffect(() => cancelPreload, []);
   const actionChrome: ReactNode = <><span aria-hidden="true" className="pointer-events-none absolute inset-[0px] z-20 rounded-[9999px] bg-white opacity-[0.15]" /><span aria-hidden="true" className="pointer-events-none absolute inset-0 z-0" style={{ background: CARD_ACTION_GLOSS }} /><span className="engraved-title relative z-10 text-[0.9em]">{label}</span></>;
   return isReady ? (
-    <TransitionLink href={href} className={`${CARD_ACTION_BASE_CLASS} bg-brand-button`} onMouseEnter={() => onPlayHoverChange?.(true)} onMouseLeave={() => onPlayHoverChange?.(false)} onFocus={() => onPlayHoverChange?.(true)} onBlur={() => onPlayHoverChange?.(false)} {...touchPressProps()}>
+    <TransitionLink href={href} aria-label={`Play ${gameTitle}`} className={`${CARD_ACTION_BASE_CLASS} bg-brand-button`} onMouseEnter={() => { onPlayHoverChange?.(true); startPreload(); }} onMouseLeave={() => { onPlayHoverChange?.(false); cancelPreload(); }} onFocus={() => { onPlayHoverChange?.(true); startPreload(); }} onBlur={() => { onPlayHoverChange?.(false); cancelPreload(); }} {...touchPressProps()}>
       {actionChrome}
     </TransitionLink>
   ) : (
@@ -92,7 +101,7 @@ const GameCardTile = memo(function GameCardTile({ game, index, prefersReducedMot
       <div aria-hidden className={VAT_GLASS_LAYER_CLASS} style={{ background: VAT_GLASS_BACKGROUND }} />
       <div aria-hidden className={VAT_GLOW_MASK_LAYER_CLASS} style={{ backgroundColor: game.gameColor, maskImage: `url('${GAME_CARD_GLOW_LAYER_SRC}')`, WebkitMaskImage: `url('${GAME_CARD_GLOW_LAYER_SRC}')`, ...GLOW_MASK_BASE_STYLE }} />
       <Image src={GAME_CARD_METAL_LAYER_SRC} alt="" fill aria-hidden className="pointer-events-none z-[7] select-none" sizes={GAME_CARD_IMAGE_SIZES} loading={index === 0 ? "eager" : "lazy"} />
-      <div className="relative z-[20] flex h-full flex-col items-center justify-center gap-[16.65em]"><div className="flex h-[3.5em] items-center justify-center bg-brand-background w-[14em] border-[0.2em] border-black"><h2 className="engraved-title text-center text-[1.5em] leading-[0.9] font-bold">{game.title}</h2></div><CardAction isReady={game.isReady} href={game.href} onPlayHoverChange={setIsPlayHovered} /></div>
+      <div className="relative z-[20] flex h-full flex-col items-center justify-center gap-[16.65em]"><div className="flex h-[3.5em] items-center justify-center bg-brand-background w-[14em] border-[0.2em] border-black"><h2 className="engraved-title text-center text-[1.5em] leading-[0.9] font-bold">{game.title}</h2></div><CardAction isReady={game.isReady} href={game.href} gameTitle={game.title} onPlayHoverChange={setIsPlayHovered} /></div>
     </article>
   );
 });
@@ -166,14 +175,36 @@ function useCenteredCardIndex(containerRef: RefObject<HTMLElement | null>, enabl
   return enabled ? centeredIndex : null;
 }
 
+// Reveals the page (hidden on first load by the BOOT_ATTR gate) once everything that used to pop in separately is ready.
+function useRevealWhenReady() {
+  useEffect(() => {
+    const root = document.documentElement;
+    if (!root.hasAttribute(BOOT_ATTR)) return;
+
+    const background = new window.Image();
+    background.src = HOME_BACKGROUND_SRC;
+    const backgroundReady = background.decode().catch(() => {});
+    const pipesReady = new Promise<void>((resolve) => {
+      if (root.hasAttribute(PIPES_READY_ATTR)) resolve();
+      else window.addEventListener(PIPES_READY_EVENT, () => resolve(), { once: true });
+    });
+
+    // Two frames so the pipes have actually been painted, not just rendered.
+    Promise.all([document.fonts.ready, backgroundReady, pipesReady]).then(() =>
+      requestAnimationFrame(() => requestAnimationFrame(() => root.removeAttribute(BOOT_ATTR))),
+    );
+  }, []);
+}
+
 export default function HomePageClient() {
+  useRevealWhenReady();
   const prefersReducedMotion = usePrefersReducedMotion();
   const isStacked = useIsHomeStacked();
   const isTouchOnly = useHasFinePointer() === false;
   const mainRef = useRef<HTMLElement | null>(null);
   const centeredIndex = useCenteredCardIndex(mainRef, isStacked && isTouchOnly);
   return (
-    <main ref={mainRef} className="home-gamecards relative z-[10] shrink-0 overflow-visible pt-[var(--rlg-home-top-pad)] text-brand-button home-stacked:pb-16">
+    <main id="main-content" tabIndex={-1} ref={mainRef} className="home-gamecards relative z-[10] shrink-0 overflow-visible pt-[var(--rlg-home-top-pad)] text-brand-button home-stacked:pb-16">
       {isStacked && <StackedPipes containerRef={mainRef} />}
       <div className="relative z-[1] w-full px-[var(--rlg-gamecard-gap)]" style={CARD_GRID_STYLE}>
         <section>

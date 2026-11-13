@@ -108,10 +108,10 @@
         matchMedia("(resolution: " + window.devicePixelRatio + "dppx)")
           .addEventListener("change", watchGamePixelRatio, { once: true });
       }
-      var buildVersion = new URLSearchParams(window.location.search).get("v") || "1.0.5";
-      var buildRevision = new URLSearchParams(window.location.search).get("revision") || "a9e55d21a398";
-      var buildDirectory = new URLSearchParams(window.location.search).get("build") || "Build/RapidPath-1.0.5/Build";
-      var buildFileName = new URLSearchParams(window.location.search).get("file") || "RapidPath-1.0.5";
+      var buildVersion = new URLSearchParams(window.location.search).get("v");
+      var buildRevision = new URLSearchParams(window.location.search).get("revision");
+      var buildDirectory = new URLSearchParams(window.location.search).get("build");
+      var buildFileName = new URLSearchParams(window.location.search).get("file");
 
       function versionedBuildUrl(filename) {
         return buildDirectory + "/" + filename + "?v=" + encodeURIComponent(buildVersion) + "&revision=" + encodeURIComponent(buildRevision);
@@ -131,7 +131,7 @@
       }
 
       window.addEventListener("message", function (event) {
-        if (event.origin !== window.location.origin) {
+        if (event.origin !== window.location.origin || event.source !== window.parent) {
           return;
         }
 

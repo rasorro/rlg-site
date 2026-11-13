@@ -15,9 +15,10 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     exit;
 }
 
-require_once '/home/maliyatr/config.php';
+// config.php sits one level above the web root (the folder this site is served from), outside anything public.
+require_once dirname($_SERVER['DOCUMENT_ROOT']) . '/config.php';
 
-$limit = min((int) ($_GET['limit'] ?? 20), 100);
+$limit = max(1, min((int) ($_GET['limit'] ?? 20), 100)); // LIMIT must be >= 1 or MySQL errors
 $showPath = isset($_GET['showPath']) && $_GET['showPath'] === 'true' ? 1 : 0;
 
 try {

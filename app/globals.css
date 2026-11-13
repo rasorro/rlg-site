@@ -8,8 +8,8 @@
 @custom-variant nav-stacked (&:where([data-nav-stacked] *));
 
 @theme inline {
-  --font-sans: var(--font-bagel-fat-one);
-  --font-mono: var(--font-bagel-fat-one);
+  --font-sans: var(--font-coiny);
+  --font-mono: var(--font-coiny);
   --color-brand-button: #FF3B26;
   --color-brand-text: #00ff75fa;
   --color-brand-accent: #ff665aff;
@@ -143,25 +143,68 @@ body::-webkit-scrollbar-thumb {
   border: 2px solid var(--color-brand-background);
 }
 
-.hide-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-brand-pipe) var(--color-brand-background);
-  -ms-overflow-style: auto;
+/* Home first load: see BOOT_ATTR in home-layout.ts. The solid <html> background shows meanwhile. */
+/* Keyboard focus: a black ring then a glow-green ring, so at least one of them contrasts with whatever is behind
+   (green on the grey metal alone is only ~2.5:1). Same black-outline-plus-green-glow language as the rest of the site. */
+a:focus-visible,
+button:focus-visible,
+[tabindex]:focus-visible:not(iframe):not(canvas) {
+  outline: 3px solid var(--color-brand-glow);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 3px #000;
 }
 
-.hide-scrollbar::-webkit-scrollbar {
-  width: 12px;
-  height: 12px;
+/* The flask link is clipped to a circle for its hit area; let its focus ring show (it is already rounded-full). */
+[data-rlg-flask]:focus-visible {
+  clip-path: none !important;
+  -webkit-clip-path: none !important;
 }
 
-.hide-scrollbar::-webkit-scrollbar-track {
+/* "Skip to main content": invisible until a keyboard user tabs to it, then it sits over the navbar. */
+.skip-link {
+  position: fixed;
+  left: 0.5rem;
+  top: 0.5rem;
+  z-index: 100;
+  transform: translateY(-300%);
+  padding: 0.5em 1em;
   background: var(--color-brand-background);
+  color: var(--color-brand-glow);
+  border: 3px solid #000;
+  font-weight: bold;
 }
 
-.hide-scrollbar::-webkit-scrollbar-thumb {
-  background-color: var(--color-brand-pipe);
-  border-radius: 9999px;
-  border: 2px solid var(--color-brand-background);
+.skip-link:focus {
+  transform: none;
+}
+
+/* <main> is only focused by the skip link, not tabbed to, so it needs no ring. */
+main:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+/* Touchscreens: controls are at least 44px tall (WCAG 2.5.5). Desktop sizes are unchanged. */
+@media (pointer: coarse) {
+  .rlg-nav-about,
+  .rlg-nav-contact,
+  .rlg-card-action {
+    min-height: 44px;
+  }
+}
+
+body {
+  transition: opacity 0.35s ease-out;
+}
+
+html[data-rlg-boot] body {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body {
+    transition: none;
+  }
 }
 
 body {
@@ -233,14 +276,7 @@ body:has(.home-gamecards) {
   }
 }
 
-.liquid-bubble {
-  animation-name: liquid-bubble-rise;
-  animation-duration: var(--bubble-duration, 4.2s);
-  animation-delay: var(--bubble-delay, 0s);
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
-}
-
+.liquid-bubble,
 .vat-bubble {
   animation-name: liquid-bubble-rise;
   animation-duration: var(--bubble-duration, 4.2s);

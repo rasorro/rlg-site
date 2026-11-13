@@ -1,14 +1,14 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 
-// Every Unity WebGL game the site serves. A game's active build version is the constant in its client page;
+// Every Unity WebGL game the site serves. A game's active build version is the constant in app/games.ts;
 // the build lives in public/optimized_assets/game_assets/<slug>/Build/<prefix>-<version>/Build/.
 export const UNITY_GAMES = [
   {
     name: "Rapid Path",
     slug: "rapid-path",
     prefix: "RapidPath",
-    clientFile: path.join("app", "rapid-path", "rapid-path-client.tsx"),
+    clientFile: path.join("app", "games.ts"),
     versionConstant: "RAPID_PATH_BUILD_VERSION",
   },
   {
@@ -16,7 +16,7 @@ export const UNITY_GAMES = [
     slug: "stickman-skydive-simulator", // asset folder name; the page route is "stickman-skydive"
     route: "stickman-skydive",
     prefix: "StickmanSkydive",
-    clientFile: path.join("app", "stickman-skydive", "stickman-client.tsx"),
+    clientFile: path.join("app", "games.ts"),
     versionConstant: "STICKMAN_BUILD_VERSION",
   },
 ];
@@ -24,7 +24,7 @@ export const UNITY_GAMES = [
 export async function readActiveVersion(projectRoot, game) {
   const source = await fs.readFile(path.join(projectRoot, game.clientFile), "utf8");
   const match = source.match(new RegExp(`const ${game.versionConstant} = "([0-9]+(?:\\.[0-9]+)*)";`));
-  if (!match) throw new Error(`Could not read ${game.versionConstant} from the ${game.name} page.`);
+  if (!match) throw new Error(`Could not read ${game.versionConstant} from app/games.ts for ${game.name}.`);
   return match[1];
 }
 
