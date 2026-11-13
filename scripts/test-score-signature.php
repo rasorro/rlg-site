@@ -24,13 +24,12 @@ $check('non-integer ts rejected', !score_signature_valid($secret, 'Ann', 42, tru
 $check('name with separator cannot be reshaped', !score_signature_valid($secret, 'Ann|42', 1, true, $now, $good, $now));
 
 $check('plain name unchanged', leaderboard_clean_name('Ann') === 'Ann');
-$check('tags and controls stripped', leaderboard_clean_name("  <b>An
-n</b> ") === 'bAnn/b');
-$check('zero-width and direction marks stripped', leaderboard_clean_name("A​n‮n") === 'Ann');
+$check('tags and controls stripped', leaderboard_clean_name("  <b>An\nn</b>\x07 ") === 'bAnn/b');
+$check('zero-width and direction marks stripped', leaderboard_clean_name("A\u{200B}n\u{202E}n") === 'Ann');
 $check('spaces collapsed', leaderboard_clean_name('A   n  n') === 'A n n');
-$check('emoji and accents kept', leaderboard_clean_name('José 🚀') === 'José 🚀');
-$check('only junk becomes empty', leaderboard_clean_name("<>
-") === '');
-$check('invalid UTF-8 becomes empty', leaderboard_clean_name("ÿþ") === '');
+$check('emoji and accents kept', leaderboard_clean_name("Jos\u{E9} \u{1F680}") === "Jos\u{E9} \u{1F680}");
+$check('only junk becomes empty', leaderboard_clean_name("<>\n") === '');
+$check('invalid UTF-8 becomes empty', leaderboard_clean_name("\xff\xfe") === '');
+$check('letters p, c, s untouched', leaderboard_clean_name('Cooper Speeds') === 'Cooper Speeds');
 
 exit($fail === 0 ? 0 : 1);

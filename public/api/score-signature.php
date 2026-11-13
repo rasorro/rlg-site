@@ -24,9 +24,9 @@ function score_signature_valid(string $secret, string $name, int $score, bool $s
 // and direction tricks, escape codes) and no < > (rich-text tags). Returns '' if nothing usable is left.
 function leaderboard_clean_name(string $name): string
 {
-    $clean = preg_replace('/[p{Cc}p{Cf}p{Zl}p{Zp}<>]/u', '', $name);
+    $clean = preg_replace('/[\p{Cc}\p{Cf}\p{Zl}\p{Zp}<>]/u', '', $name);
     if ($clean === null) { // invalid UTF-8
         return '';
     }
-    return trim(preg_replace('/s+/u', ' ', $clean) ?? '');
+    return trim(preg_replace('/\s+/u', ' ', $clean) ?? '');
 }
