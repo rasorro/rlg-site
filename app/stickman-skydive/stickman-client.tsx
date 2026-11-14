@@ -106,7 +106,7 @@ export default function StickmanSkydiveClientPage() {
     };
 
     return (
-        <main id="main-content" tabIndex={-1} className="relative w-full min-w-0 bg-brand-background-dark">
+        <main className="relative w-full min-w-0 bg-brand-background-dark">
             <h1 className="sr-only">Stickman Skydive</h1>
             <div
                 ref={playAreaRef}
@@ -150,7 +150,7 @@ export default function StickmanSkydiveClientPage() {
             </div>
             {showUiPanels && canLoadGame && (
                 <div className="mx-auto w-full max-w-[840px] px-4 pb-8">
-                    <GameInfoPanel sections={INFO_SECTIONS} height="auto" showControlsDiagram compact inline className="!mt-0 max-w-none" sectionClassName="bg-[color-mix(in_srgb,var(--color-brand-background-dark)_85%,white)]" />
+                    <GameInfoPanel sections={INFO_SECTIONS} height="auto" showControlsDiagram compact inline className="!mt-0 max-w-none" />
                 </div>
             )}
         </main>

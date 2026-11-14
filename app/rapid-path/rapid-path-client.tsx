@@ -129,7 +129,7 @@ export default function RapidPathClientPage() {
     };
 
     return (
-        <main id="main-content" tabIndex={-1} className="relative w-full min-w-0 bg-brand-background-dark">
+        <main className="relative w-full min-w-0 bg-brand-background-dark">
             <h1 className="sr-only">Rapid Path</h1>
             <div
                 ref={playAreaRef}

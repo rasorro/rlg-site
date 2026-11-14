@@ -19,8 +19,6 @@ type GameInfoPanelProps = {
     fitContent?: boolean;
     inline?: boolean;
     adaptiveText?: boolean;
-    // Background of each section box.
-    sectionClassName?: string;
 };
 
 function SectionText({ text, compact }: { text: string; compact: boolean }) {
@@ -76,7 +74,7 @@ function ControlsDiagram({ compact }: { compact: boolean }) {
     );
 }
 
-export default function GameInfoPanel({ sections, height, className = "", showControlsDiagram = false, compact = false, fitContent = false, inline = false, adaptiveText = false, sectionClassName = "bg-brand-background-dark" }: GameInfoPanelProps) {
+export default function GameInfoPanel({ sections, height, className = "", showControlsDiagram = false, compact = false, fitContent = false, inline = false, adaptiveText = false }: GameInfoPanelProps) {
     const viewportRef = useRef<HTMLDivElement>(null);
     const contentRef = useRef<HTMLDivElement>(null);
 
@@ -140,7 +138,7 @@ export default function GameInfoPanel({ sections, height, className = "", showCo
             >
                 <div ref={contentRef} className={`${adaptiveText || fitContent ? "flex flex-1 flex-col justify-between" : "flow-root"} ${compact ? "text-xl" : ""}`}>
                     {sections.map((section, index) => (
-                        <div key={section.title} className={`shrink-0 ${fitContent ? "" : index === 0 ? "" : compact ? "mt-1.5" : "mt-3"} rounded-md border border-black/70 ${sectionClassName} ${compact ? "p-2.5" : "p-3"}`}>
+                        <div key={section.title} className={`shrink-0 ${fitContent ? "" : index === 0 ? "" : compact ? "mt-1.5" : "mt-3"} rounded-md border border-black/70 bg-black/20 ${compact ? "p-2.5" : "p-3"}`}>
                             <h2 className={`engraved-title whitespace-nowrap font-bold uppercase tracking-wide ${compact ? "text-[1.28em]" : "text-[1.75rem]"}`}>{section.title}</h2>
                             {showControlsDiagram && section.title === "Controls" && <ControlsDiagram compact={compact} />}
                             {section.text && <SectionText text={section.text} compact={compact} />}

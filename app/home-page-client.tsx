@@ -204,7 +204,7 @@ export default function HomePageClient() {
   const mainRef = useRef<HTMLElement | null>(null);
   const centeredIndex = useCenteredCardIndex(mainRef, isStacked && isTouchOnly);
   return (
-    <main id="main-content" tabIndex={-1} ref={mainRef} className="home-gamecards relative z-[10] shrink-0 overflow-visible pt-[var(--rlg-home-top-pad)] text-brand-button home-stacked:pb-16">
+    <main ref={mainRef} className="home-gamecards relative z-[10] shrink-0 overflow-visible pt-[var(--rlg-home-top-pad)] text-brand-button home-stacked:pb-16">
       {isStacked && <StackedPipes containerRef={mainRef} />}
       <div className="relative z-[1] w-full px-[var(--rlg-gamecard-gap)]" style={CARD_GRID_STYLE}>
         <section>

@@ -62,9 +62,6 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: LAYOUT_FLAGS_SCRIPT }} />
       </head>
       <body className="min-h-dvh overflow-x-clip font-sans">
-        <a href="#main-content" className="skip-link">
-          Skip to main content
-        </a>
         <UiProvider>
           <AppShell>{children}</AppShell>
         </UiProvider>

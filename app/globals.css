@@ -160,35 +160,10 @@ button:focus-visible,
   -webkit-clip-path: none !important;
 }
 
-/* "Skip to main content": invisible until a keyboard user tabs to it, then it sits over the navbar. */
-.skip-link {
-  position: fixed;
-  left: 0.5rem;
-  top: 0.5rem;
-  z-index: 100;
-  transform: translateY(-300%);
-  padding: 0.5em 1em;
-  background: var(--color-brand-background);
-  color: var(--color-brand-glow);
-  border: 3px solid #000;
-  font-weight: bold;
-}
-
-.skip-link:focus {
-  transform: none;
-}
-
-/* <main> is only focused by the skip link, not tabbed to, so it needs no ring. */
-main:focus {
-  outline: none;
-  box-shadow: none;
-}
-
-/* Touchscreens: controls are at least 44px tall (WCAG 2.5.5). Desktop sizes are unchanged. */
+/* Touchscreens: nav links are at least 44px tall (WCAG 2.5.5). Desktop sizes are unchanged. */
 @media (pointer: coarse) {
   .rlg-nav-about,
-  .rlg-nav-contact,
-  .rlg-card-action {
+  .rlg-nav-contact {
     min-height: 44px;
   }
 }

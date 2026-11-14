@@ -14,15 +14,13 @@ const BADGE_GLOSS = "linear-gradient(to bottom, rgba(255, 255, 255, 0.4), rgba(2
 // Shared layout for text pages (About, Contact, coming-soon games): one metal panel, text scaled to the viewport.
 export default function InfoPage({ title, children, badge, glowColor }: InfoPageProps) {
     return (
-        <main id="main-content" tabIndex={-1} className="relative z-[10] min-h-[calc(100dvh-var(--rlg-nav-h))] shrink-0 bg-brand-background px-[clamp(1rem,4vw,1.5rem)] pb-16 pt-[calc(var(--rlg-nav-row-h)*0.5+1.5rem)] text-brand-text">
+        <main className="relative z-[10] min-h-[calc(100dvh-var(--rlg-nav-h))] shrink-0 bg-brand-background px-[clamp(1rem,4vw,1.5rem)] pb-16 pt-[calc(var(--rlg-nav-row-h)*0.5+1.5rem)] text-brand-text">
             <div
                 className="mx-auto max-w-5xl border-3 border-black bg-brand-pipe p-[clamp(1.25rem,4vw,2.5rem)]"
                 style={glowColor ? { filter: `drop-shadow(0 0 0.6rem ${glowColor})` } : undefined}
             >
                 <div className="flex flex-wrap items-center gap-x-[0.5em] gap-y-[0.3em] text-[clamp(2rem,7vw,3rem)]">
-                    <h1 className="border-3 border-black bg-brand-background px-[0.4em] py-[0.05em] font-bold leading-tight">
-                        <span className="engraved-title">{title}</span>
-                    </h1>
+                    <h1 className="engraved-title font-bold leading-tight">{title}</h1>
                     {badge && (
                         <span className="relative inline-flex items-center overflow-hidden rounded-full border-3 border-white/40 bg-brand-background px-[0.8em] py-[0.35em] text-[max(0.4em,0.95rem)] font-bold leading-none ring-2 ring-black">
                             <span aria-hidden="true" className="pointer-events-none absolute inset-0 z-0" style={{ background: BADGE_GLOSS }} />
@@ -30,7 +28,7 @@ export default function InfoPage({ title, children, badge, glowColor }: InfoPage
                         </span>
                     )}
                 </div>
-                <div className="mt-4 rounded-md bg-brand-background-dark p-[0.6em] text-[clamp(1.2rem,4.8vw,2rem)] leading-relaxed">{children}</div>
+                <div className="mt-4 text-[clamp(1.2rem,4.8vw,2rem)] leading-relaxed">{children}</div>
             </div>
         </main>
     );
