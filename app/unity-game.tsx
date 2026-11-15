@@ -1,6 +1,8 @@
 "use client";
 
 import Image from "next/image";
+import { usePathname } from "next/navigation";
+import { trackEvent } from "./analytics";
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import DesktopOnlyPanel from "./desktop-only-panel";
 import { gameFrameSrc, type UnityBuild } from "./games";
@@ -25,6 +27,18 @@ export function useUnityGame(onGameMessage?: (message: GameMessage) => void) {
     const hasFinePointer = useHasFinePointer();
     const canLoadGame = hasFinePointer === true || loadAnyway;
     const showDesktopOnlyPanel = hasFinePointer === false && !loadAnyway;
+
+    // Funnel in GoatCounter, e.g. game-start/rapid-path/ then game-ready/rapid-path/ (the gap is people who left while it downloaded).
+    const pathname = usePathname();
+    useEffect(() => {
+        if (shouldLoadGame) trackEvent(`game-start${pathname}`);
+    }, [shouldLoadGame, pathname]);
+    useEffect(() => {
+        if (isGameReady) trackEvent(`game-ready${pathname}`);
+    }, [isGameReady, pathname]);
+    useEffect(() => {
+        if (gameLoadError) trackEvent(`game-error${pathname}`);
+    }, [gameLoadError, pathname]);
 
     const onGameMessageRef = useRef(onGameMessage);
     useEffect(() => {

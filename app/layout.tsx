@@ -3,6 +3,7 @@ import { Coiny } from "next/font/google";
 import "./globals.css";
 import AppShell from "./app-shell";
 import { UiProvider } from "./ui-context";
+import Analytics from "./analytics";
 import { LAYOUT_FLAGS_SCRIPT } from "./home-layout";
 
 const universalFont = Coiny({
@@ -62,6 +63,7 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: LAYOUT_FLAGS_SCRIPT }} />
       </head>
       <body className="min-h-dvh overflow-x-clip font-sans">
+        <Analytics />
         <UiProvider>
           <AppShell>{children}</AppShell>
         </UiProvider>
