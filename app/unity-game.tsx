@@ -30,12 +30,28 @@ export function useUnityGame(onGameMessage?: (message: GameMessage) => void) {
 
     // Funnel in GoatCounter, e.g. game-start/rapid-path/ then game-ready/rapid-path/ (the gap is people who left while it downloaded).
     const pathname = usePathname();
+    const startedAt = useRef<number | null>(null);
     useEffect(() => {
-        if (shouldLoadGame) trackEvent(`game-start${pathname}`);
+        if (!shouldLoadGame) return;
+        startedAt.current = performance.now();
+        trackEvent(`game-start${pathname}`);
     }, [shouldLoadGame, pathname]);
     useEffect(() => {
-        if (isGameReady) trackEvent(`game-ready${pathname}`);
+        if (!isGameReady) return;
+        trackEvent(`game-ready${pathname}`);
+        if (startedAt.current !== null) {
+            const seconds = (performance.now() - startedAt.current) / 1000;
+            trackEvent(`load-time${pathname}${seconds < 5 ? "under-5s" : seconds < 15 ? "5-15s" : "over-15s"}`);
+            startedAt.current = null; // count each load once
+        }
     }, [isGameReady, pathname]);
+    // Touch-only visitors see the notice first; this shows how many see it and how many play anyway.
+    useEffect(() => {
+        if (showDesktopOnlyPanel) trackEvent(`desktop-notice${pathname}`);
+    }, [showDesktopOnlyPanel, pathname]);
+    useEffect(() => {
+        if (loadAnyway) trackEvent(`load-anyway${pathname}`);
+    }, [loadAnyway, pathname]);
     useEffect(() => {
         if (gameLoadError) trackEvent(`game-error${pathname}`);
     }, [gameLoadError, pathname]);
