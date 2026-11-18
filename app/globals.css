@@ -109,7 +109,7 @@ body {
   scrollbar-width: thin;
   scrollbar-color: var(--color-brand-pipe) var(--color-brand-background);
   -ms-overflow-style: auto;
-  cursor: url("/optimized_assets/global_assets/rlg_cursor.png") 0 0, auto;
+  cursor: url("/optimized_assets/global_assets/rlg_cursor.png?v=2") 0 0, auto;
 }
 
 a,
@@ -122,7 +122,7 @@ input[type="submit"],
 input[type="reset"],
 [role="button"],
 [data-cursor="interactive"] {
-  cursor: url("/optimized_assets/global_assets/rlg_cursor_hover.png") 0 0, pointer;
+  cursor: url("/optimized_assets/global_assets/rlg_cursor_hover.png?v=2") 0 0, pointer;
 }
 
 html::-webkit-scrollbar,
