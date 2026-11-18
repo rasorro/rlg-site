@@ -1,7 +1,7 @@
 // Single source of truth for the Unity builds. scripts/unity-games.mjs reads the *_BUILD_VERSION constants below
 // (keep the `const NAME = "x.y.z";` shape), and game.html reads everything else from the iframe URL.
 export const RAPID_PATH_BUILD_VERSION = "1.0.6";
-export const RAPID_PATH_BUILD_REVISION = "5e1db7cf7a7a";
+export const RAPID_PATH_BUILD_REVISION = "4d85a894b192";
 export const STICKMAN_BUILD_VERSION = "1.1";
 // Bump the revision when re-uploading a build under the same version, so the long-cached files are fetched again.
 export const STICKMAN_BUILD_REVISION = "7";
